@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <title>{{ .Title }} - Premium Portfolio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: { sans: ['Outfit', 'sans-serif'] },
+            colors: {
+              accent: { warm: '#c2410c', olive: '#475e4e' },
+              stone: {
+                50: '#fafaf9',
+                100: '#f5f5f4',
+                200: '#e7e5e4',
+                300: '#d6d3d1',
+                400: '#a8a29e',
+                500: '#78716c',
+                800: '#292524',
+                900: '#1c1917',
+                950: '#0c0a09',
+              }
+            },
+            animation: {
+                'blob': 'blob 10s infinite',
+                'fade-in': 'fadeIn 1.2s ease-out forwards',
+            },
+            keyframes: {
+                blob: {
+                    '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                    '33%': { transform: 'translate(20px, -20px) scale(1.05)' },
+                    '66%': { transform: 'translate(-10px, 10px) scale(0.95)' },
+                    '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                },
+                fadeIn: {
+                    '0%': { opacity: '0', transform: 'translateY(15px)' },
+                    '100%': { opacity: '1', transform: 'translateY(0)' },
+                }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      .glass-card {
+        background: rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid rgba(231, 229, 228, 0.6);
+      }
+      .dark .glass-card {
+        background: rgba(28, 25, 23, 0.4);
+        border: 1px solid rgba(68, 64, 60, 0.2);
+      }
+      body { scroll-behavior: smooth; }
+      .editorial-text {
+        letter-spacing: -0.01em;
+        line-height: 1.8;
+      }
+    </style>
+</head>
+<body class="bg-stone-50 dark:bg-stone-950 text-stone-800 dark:text-stone-200 antialiased overflow-x-hidden transition-colors duration-700">
+    <!-- Background Blobs - Muted -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+        <div class="absolute top-[-5%] left-[-5%] w-[50%] h-[50%] bg-stone-200/20 dark:bg-stone-800/10 rounded-full blur-[140px] animate-blob"></div>
+        <div class="absolute bottom-[-5%] right-[-5%] w-[50%] h-[50%] bg-accent-warm/5 dark:bg-accent-warm/[0.02] rounded-full blur-[140px] animate-blob animation-delay-2000"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-5xl transition-all duration-500" id="navbar">
+        <div class="glass-card rounded-3xl px-8 py-4 flex items-center justify-between shadow-2xl shadow-stone-900/5">
+            <a href="/" class="text-xl font-black tracking-tight"><span class="text-accent-warm">Kurnia</span>.</a>
+            <div class="flex items-center space-x-6">
+                <a href="/" class="text-sm font-bold opacity-70 hover:opacity-100 transition-opacity">Back to Portfolio</a>
+                <button id="theme-toggle" class="p-2 rounded-xl bg-stone-100 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 transition-colors">
+                    <svg class="w-5 h-5 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    <svg class="w-5 h-5 hidden dark:block text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-40 pb-20 px-4">
+        <article class="max-w-5xl mx-auto animate-fade-in">
+            <!-- Hero Header -->
+            <header class="text-center mb-16">
+                <div class="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-accent-warm/10 text-accent-warm text-xs font-bold uppercase tracking-widest mb-6">
+                    <span class="w-2 h-2 rounded-full bg-accent-warm"></span>
+                    <span>Project Showcase</span>
+                </div>
+                <h1 class="text-4xl md:text-6xl font-black tracking-tight mb-8 leading-tight">
+                    {{ .Title }}
+                </h1>
+                <div class="flex flex-wrap justify-center gap-3">
+                    <span class="px-5 py-2 rounded-2xl glass-card text-sm font-bold text-stone-500">
+                        {{ .TechStack }}
+                    </span>
+                </div>
+            </header>
+
+            <!-- Main Cover -->
+            <div class="rounded-[3rem] overflow-hidden glass-card p-4 mb-20 shadow-2xl shadow-stone-900/5">
+                <div class="rounded-[2.5rem] overflow-hidden relative group">
+                    {{ if .Images }}
+                        {{ with index .Images 0 }}
+                            <img src="/media/{{ .Image }}" alt="{{ .Title }}" class="w-full h-auto object-cover max-h-[700px] transition-transform duration-700 group-hover:scale-105 filter sepia-[0.1]">
+                        {{ end }}
+                    {{ else if .Image }}
+                        <img src="/media/{{ .Image }}" alt="{{ .Title }}" class="w-full h-auto object-cover max-h-[700px] transition-transform duration-700 group-hover:scale-105 filter sepia-[0.1]">
+                    {{ else }}
+                        <img src="https://image.pollinations.ai/prompt/{{ .Title }}?width=1200&height=600&nologo=true" alt="{{ .Title }}" class="w-full h-auto object-cover max-h-[700px]">
+                    {{ end }}
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-16 mb-20">
+                <div class="lg:col-span-2">
+                    <h3 class="text-2xl font-bold mb-6 flex items-center">
+                        <span class="w-8 h-1 bg-accent-warm mr-4 rounded-full"></span>
+                        Overview
+                    </h3>
+                    <div class="prose prose-lg dark:prose-invert max-w-none text-stone-600 dark:text-stone-400 italic leading-loose editorial-text">
+                        {{ .Description }}
+                    </div>
+                </div>
+                <div class="space-y-10">
+                    <div class="p-8 rounded-3xl glass-card">
+                        <h4 class="text-lg font-bold mb-4">Project Info</h4>
+                        <ul class="space-y-4">
+                            <li class="flex justify-between border-b border-stone-200 dark:border-white/5 pb-4">
+                                <span class="text-stone-500">Category</span>
+                                <span class="font-bold">Software Development</span>
+                            </li>
+                            <li class="flex justify-between border-b border-stone-200 dark:border-white/5 pb-4">
+                                <span class="text-stone-500">Industry</span>
+                                <span class="font-bold text-accent-warm">Healthcare/IT</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gallery -->
+            {{ if gt (len .Images) 1 }}
+            <section class="mb-20">
+                <h3 class="text-2xl font-bold mb-10 text-center uppercase tracking-widest text-stone-400">Project Gallery</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {{ range $index, $img := .Images }}
+                        {{ if ne $index 0 }}
+                        <div class="rounded-3xl overflow-hidden glass-card p-3 group">
+                            <div class="rounded-2xl overflow-hidden h-64 relative">
+                                <img src="/media/{{ $img.Image }}" alt="{{ $img.Caption }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 filter sepia-[0.1]">
+                                {{ if $img.Caption }}
+                                <div class="absolute inset-0 bg-gradient-to-t from-stone-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
+                                    <p class="text-white font-medium italic">{{ $img.Caption }}</p>
+                                </div>
+                                {{ end }}
+                            </div>
+                        </div>
+                        {{ end }}
+                    {{ end }}
+                </div>
+            </section>
+            {{ end }}
+
+            <!-- Actions -->
+            <div class="flex flex-col sm:flex-row justify-center gap-6 pt-10 border-t border-stone-200 dark:border-white/10">
+                {{ if .Link }}
+                <a href="{{ .Link }}" target="_blank" class="px-10 py-5 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-2xl font-black tracking-tight hover:shadow-2xl hover:shadow-stone-900/20 transition-all active:scale-95 flex items-center justify-center">
+                    Live Preview <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 17L17 7m0 0H8m9 0v9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </a>
+                {{ end }}
+                <a href="/#projects" class="px-10 py-5 rounded-2xl glass-card font-black tracking-tight hover:bg-white dark:hover:bg-white/5 transition-all active:scale-95 flex items-center justify-center">
+                    Back to Gallery
+                </a>
+            </div>
+        </article>
+    </main>
+
+    <footer class="py-12 border-t border-stone-200/50 dark:border-white/5 text-center">
+        <p class="text-stone-500 dark:text-stone-400 font-medium">&copy; Kurnia. Premium Digital Experience.</p>
+    </footer>
+
+    <script>
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        }
+
+        themeToggleBtn?.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
+        });
+
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                nav.classList.add('top-2', 'w-full', 'max-w-none', 'rounded-none');
+                nav.querySelector('.glass-card').classList.add('rounded-none', 'border-x-0', 'border-t-0');
+            } else {
+                nav.classList.remove('top-2', 'w-full', 'max-w-none', 'rounded-none');
+                nav.querySelector('.glass-card').classList.remove('rounded-none', 'border-x-0', 'border-t-0');
+            }
+        });
+    </script>
+</body>
+</html>
