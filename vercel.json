@@ -6,7 +6,7 @@
     }
   ],
   "functions": {
-    "api/index.go": {
+    "api/**/*": {
       "includeFiles": "{templates/**,public/**,db.sqlite3}"
     }
   }
