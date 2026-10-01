@@ -4,10 +4,5 @@
       "source": "/(.*)",
       "destination": "/api/index.go"
     }
-  ],
-  "functions": {
-    "api/**/*": {
-      "includeFiles": "{templates/**,public/**,db.sqlite3}"
-    }
-  }
+  ]
 }
