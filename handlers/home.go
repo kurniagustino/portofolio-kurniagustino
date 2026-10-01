@@ -15,8 +15,7 @@ func Home(c *fiber.Ctx) error {
 	database.DB.Order("created_at desc").Find(&posts)
 
 	var settings models.SiteSetting
-	database.DB.FirstOrCreate(&settings, models.SiteSetting{
-		ID: 1, 
+	database.DB.Where(models.SiteSetting{ID: 1}).Attrs(models.SiteSetting{
 		SiteTitle: "Kurnia Gustino - Portfolio",
 		HeroTitle: "IT Programmer & Software Developer",
 		HeroSubtitle: "Kurnia Gustino Pratama",
@@ -25,7 +24,7 @@ func Home(c *fiber.Ctx) error {
 		GithubLink: "https://github.com/kurniagustino",
 		LinkedInLink: "https://www.linkedin.com/in/kurnia-gustino-pratama-17022439a/",
 		EmailLink: "mailto:kurniagustino@gmail.com",
-	})
+	}).FirstOrCreate(&settings)
 
 	return c.Render("home", fiber.Map{
 		"Projects":        projects,

@@ -10,7 +10,7 @@ import (
 // GetSettingsAPI returns the site settings
 func GetSettingsAPI(c *fiber.Ctx) error {
 	var setting models.SiteSetting
-	if err := database.DB.FirstOrCreate(&setting, models.SiteSetting{ID: 1}).Error; err != nil {
+	if err := database.DB.Where(models.SiteSetting{ID: 1}).FirstOrCreate(&setting).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to load settings"})
 	}
 	return c.JSON(setting)
