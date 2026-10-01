@@ -5,6 +5,8 @@ import (
 	"portfolio_kurnia/database"
 	"portfolio_kurnia/handlers"
 
+	"portfolio_kurnia/templates"
+
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html/v2"
@@ -15,8 +17,8 @@ var app *fiber.App
 func init() {
 	database.Connect()
 
-	// Initialize the template engine
-	engine := html.New("./templates", ".html")
+	// Initialize the template engine using go:embed
+	engine := html.NewFileSystem(http.FS(templates.FS), ".html")
 
 	// Create a new Fiber app
 	app = fiber.New(fiber.Config{
