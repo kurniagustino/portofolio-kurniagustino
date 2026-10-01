@@ -44,6 +44,10 @@ func main() {
 	admin.Post("/api/projects", handlers.AdminCreateProject)
 	admin.Delete("/api/projects/:id", handlers.AdminDeleteProject)
 	admin.Delete("/api/projects/image/:id", handlers.AdminDeleteProjectImage)
+	
+	// Settings API
+	admin.Get("/api/settings", handlers.GetSettingsAPI)
+	admin.Put("/api/settings", handlers.UpdateSettingsAPI)
 
 	// Determine port for Vercel or local
 	port := os.Getenv("PORT")

@@ -57,8 +57,10 @@
         .btn:hover { background: var(--primary-hover); }
         .btn-danger { background: var(--danger); }
         .btn-danger:hover { background: #dc2626; }
-        .btn-outline { background: transparent; border: 1px solid var(--border); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: white; }
         .btn-outline:hover { background: var(--surface-light); }
+        
+        .btn-block { width: 100%; margin-top: 1rem; padding: 1rem; }
 
         .container {
             max-width: 1200px;
@@ -66,11 +68,47 @@
             padding: 0 1.5rem;
         }
 
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: var(--surface);
+            color: white;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
         .header-actions {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
         }
 
         .card {
@@ -78,6 +116,7 @@
             border-radius: 12px;
             border: 1px solid var(--border);
             overflow: hidden;
+            padding: 1.5rem;
         }
 
         table {
@@ -100,9 +139,7 @@
             letter-spacing: 0.05em;
         }
 
-        tr:hover td {
-            background: rgba(255,255,255,0.01);
-        }
+        tr:hover td { background: rgba(255,255,255,0.01); }
 
         /* Modal */
         .modal-overlay {
@@ -119,10 +156,7 @@
             z-index: 1000;
         }
 
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-        }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
 
         .modal {
             background: var(--surface);
@@ -154,6 +188,13 @@
         textarea.form-control { resize: vertical; min-height: 100px; }
         
         .modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 768px) { .settings-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -164,29 +205,102 @@
     </nav>
 
     <div class="container">
-        <div class="header-actions">
-            <h1>Projects</h1>
-            <button class="btn" onclick="openModal()">+ Add New Project</button>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('projects', this)">Projects</button>
+            <button class="tab-btn" onclick="switchTab('settings', this)">Site Settings</button>
         </div>
 
-        <div class="card">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Title</th>
-                        <th>Tech Stack</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="projectTableBody">
-                    <tr><td colspan="4" style="text-align:center;">Loading...</td></tr>
-                </tbody>
-            </table>
+        <!-- PROJECTS TAB -->
+        <div id="projects" class="tab-content active">
+            <div class="header-actions">
+                <h2>Manage Projects</h2>
+                <button class="btn" onclick="openModal()">+ Add New Project</button>
+            </div>
+
+            <div class="card" style="padding: 0;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Tech Stack</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projectTableBody">
+                        <tr><td colspan="4" style="text-align:center;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
+
+        <!-- SETTINGS TAB -->
+        <div id="settings" class="tab-content">
+            <div class="header-actions">
+                <h2>Global Site Settings</h2>
+            </div>
+
+            <div class="card">
+                <form id="settingsForm">
+                    <div class="settings-grid">
+                        <div class="column">
+                            <h3>Brand & Identity</h3>
+                            <div class="form-group">
+                                <label>Site Title (Tab Name)</label>
+                                <input type="text" name="SiteTitle" id="SiteTitle" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Favicon URL (Image Link)</label>
+                                <input type="text" name="Favicon" id="Favicon" class="form-control">
+                            </div>
+                            
+                            <h3 style="margin-top: 2rem;">Hero Section</h3>
+                            <div class="form-group">
+                                <label>Hero Title (Main Heading)</label>
+                                <input type="text" name="HeroTitle" id="HeroTitle" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Hero Subtitle</label>
+                                <input type="text" name="HeroSubtitle" id="HeroSubtitle" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>About Me Text</label>
+                                <textarea name="AboutText" id="AboutText" class="form-control" style="min-height: 150px;"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="column">
+                            <h3>Social & Contact Links</h3>
+                            <div class="form-group">
+                                <label>GitHub Profile URL</label>
+                                <input type="url" name="GithubLink" id="GithubLink" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>LinkedIn Profile URL</label>
+                                <input type="url" name="LinkedInLink" id="LinkedInLink" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Contact Email (e.g., mailto:you@email.com)</label>
+                                <input type="text" name="EmailLink" id="EmailLink" class="form-control">
+                            </div>
+
+                            <h3 style="margin-top: 2rem;">Footer</h3>
+                            <div class="form-group">
+                                <label>Footer Text (Copyright)</label>
+                                <input type="text" name="FooterText" id="FooterText" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-block" id="saveSettingsBtn">Save Settings</button>
+                </form>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Modal Form -->
+    <!-- Modal Form for Projects -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <h2 id="modalTitle">Add Project</h2>
@@ -221,29 +335,33 @@
     </div>
 
     <script>
+        // TAB LOGIC
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // --- PROJECTS LOGIC ---
         async function fetchProjects() {
             try {
                 const res = await fetch('/admin/api/projects');
                 if (res.status === 401) { window.location.href = '/login'; return; }
                 const data = await res.json();
-                
                 const tbody = document.getElementById('projectTableBody');
                 tbody.innerHTML = '';
-                
-                if (data.length === 0) {
+                if (!data || data.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No projects found</td></tr>';
                     return;
                 }
-
                 data.forEach(p => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${p.ID}</td>
                         <td><strong>${p.Title}</strong></td>
                         <td>${p.TechStack}</td>
-                        <td>
-                            <button class="btn btn-danger" onclick="deleteProject(${p.ID})">Delete</button>
-                        </td>
+                        <td><button class="btn btn-danger" onclick="deleteProject(${p.ID})">Delete</button></td>
                     `;
                     tbody.appendChild(tr);
                 });
@@ -258,45 +376,73 @@
             } catch (err) { console.error(err); }
         }
 
-        // Modal Logic
         const modal = document.getElementById('modalOverlay');
-        const form = document.getElementById('projectForm');
-
+        const pform = document.getElementById('projectForm');
         function openModal() { modal.classList.add('active'); }
-        function closeModal() { 
-            modal.classList.remove('active'); 
-            form.reset(); 
-        }
+        function closeModal() { modal.classList.remove('active'); pform.reset(); }
 
-        form.addEventListener('submit', async (e) => {
+        pform.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
-            btn.textContent = 'Saving...';
-            btn.disabled = true;
-
-            const formData = new FormData(form);
+            btn.textContent = 'Saving...'; btn.disabled = true;
             try {
                 const res = await fetch('/admin/api/projects', {
                     method: 'POST',
-                    body: formData
+                    body: new FormData(pform)
                 });
-                
+                if (res.ok) { closeModal(); fetchProjects(); }
+                else alert('Failed to save project');
+            } finally { btn.textContent = 'Save Project'; btn.disabled = false; }
+        });
+
+        // --- SETTINGS LOGIC ---
+        async function fetchSettings() {
+            try {
+                const res = await fetch('/admin/api/settings');
                 if (res.ok) {
-                    closeModal();
-                    fetchProjects();
-                } else {
-                    alert('Failed to save project');
+                    const data = await res.json();
+                    document.getElementById('SiteTitle').value = data.SiteTitle || '';
+                    document.getElementById('Favicon').value = data.Favicon || '';
+                    document.getElementById('HeroTitle').value = data.HeroTitle || '';
+                    document.getElementById('HeroSubtitle').value = data.HeroSubtitle || '';
+                    document.getElementById('AboutText').value = data.AboutText || '';
+                    document.getElementById('FooterText').value = data.FooterText || '';
+                    document.getElementById('GithubLink').value = data.GithubLink || '';
+                    document.getElementById('LinkedInLink').value = data.LinkedInLink || '';
+                    document.getElementById('EmailLink').value = data.EmailLink || '';
                 }
-            } catch (err) {
-                console.error(err);
-            } finally {
-                btn.textContent = 'Save Project';
-                btn.disabled = false;
-            }
+            } catch (err) { console.error(err); }
+        }
+
+        document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('saveSettingsBtn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Saving Settings...'; btn.disabled = true;
+
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            // convert string to numbers if necessary (not needed here)
+
+            try {
+                const res = await fetch('/admin/api/settings', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) {
+                    alert('Settings updated successfully! Check your homepage.');
+                } else {
+                    alert('Failed to update settings.');
+                }
+            } catch (err) { console.error(err); } 
+            finally { btn.textContent = originalText; btn.disabled = false; }
         });
 
         // Init
         fetchProjects();
+        fetchSettings();
     </script>
 </body>
 </html>

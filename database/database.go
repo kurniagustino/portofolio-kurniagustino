@@ -34,7 +34,7 @@ func Connect() {
 
 	// Migrate the schema (otomatis buat tabel jika belum ada)
 	importedModels := []interface{}{
-		&models.BlogPost{}, &models.Project{}, &models.ProjectImage{}, &models.Admin{},
+		&models.BlogPost{}, &models.Project{}, &models.ProjectImage{}, &models.Admin{}, &models.SiteSetting{},
 	}
 	err = DB.AutoMigrate(importedModels...)
 	if err != nil {

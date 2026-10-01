@@ -56,3 +56,20 @@ type Admin struct {
 func (Admin) TableName() string {
 	return "admin_user"
 }
+
+type SiteSetting struct {
+	ID           uint   `gorm:"primaryKey"`
+	SiteTitle    string `gorm:"default:'Portfolio'"`
+	Favicon      string 
+	HeroTitle    string `gorm:"default:'Hi, I am a Developer'"`
+	HeroSubtitle string `gorm:"default:'Welcome to my portfolio'"`
+	AboutText    string `gorm:"type:text"`
+	FooterText   string `gorm:"default:'© 2026 Portfolio'"`
+	GithubLink   string
+	LinkedInLink string
+	EmailLink    string
+}
+
+func (SiteSetting) TableName() string {
+	return "site_setting"
+}
