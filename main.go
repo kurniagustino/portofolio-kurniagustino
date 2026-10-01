@@ -49,6 +49,11 @@ func main() {
 	admin.Get("/api/settings", handlers.GetSettingsAPI)
 	admin.Put("/api/settings", handlers.UpdateSettingsAPI)
 
+	// Menus API
+	admin.Get("/api/menus", handlers.GetMenusAPI)
+	admin.Post("/api/menus", handlers.CreateMenuAPI)
+	admin.Delete("/api/menus/:id", handlers.DeleteMenuAPI)
+
 	// Determine port for Vercel or local
 	port := os.Getenv("PORT")
 	if port == "" {

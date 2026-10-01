@@ -73,3 +73,14 @@ type SiteSetting struct {
 func (SiteSetting) TableName() string {
 	return "site_setting"
 }
+
+type MenuLink struct {
+	ID    uint   `gorm:"primaryKey"`
+	Label string `gorm:"size:50"`
+	URL   string `gorm:"size:255"`
+	Order int    `gorm:"default:0"`
+}
+
+func (MenuLink) TableName() string {
+	return "site_menulink"
+}

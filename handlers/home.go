@@ -26,10 +26,27 @@ func Home(c *fiber.Ctx) error {
 		EmailLink: "mailto:kurniagustino@gmail.com",
 	}).FirstOrCreate(&settings)
 
+	var menus []models.MenuLink
+	database.DB.Order("`order` asc").Find(&menus)
+	// Seed default menus if empty
+	if len(menus) == 0 {
+		defaultMenus := []models.MenuLink{
+			{Label: "Home", URL: "#home", Order: 1},
+			{Label: "About", URL: "#about", Order: 2},
+			{Label: "Projects", URL: "#projects", Order: 3},
+			{Label: "Contact", URL: "#contact", Order: 4},
+		}
+		for _, m := range defaultMenus {
+			database.DB.Create(&m)
+		}
+		menus = defaultMenus
+	}
+
 	return c.Render("home", fiber.Map{
 		"Projects":        projects,
 		"LatestPosts":     posts,
 		"Settings":        settings,
+		"Menus":           menus,
 		"Skills":          []string{"PHP", "Laravel", "Go", "Fiber", "Python", "JavaScript", "Flutter", "MySQL", "PostgreSQL", "MikroTik", "Docker", "Git", "Hardware Support"},
 	})
 }
