@@ -1,0 +1,10 @@
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
+CREATE TABLE `landing_blogpost` (`id` integer PRIMARY KEY AUTOINCREMENT,`title` text,`slug` text,`category` text DEFAULT "General",`content` text,`image` text,`created_at` datetime,`updated_at` datetime,CONSTRAINT `uni_landing_blogpost_slug` UNIQUE (`slug`));
+CREATE TABLE `landing_project` (`id` integer PRIMARY KEY AUTOINCREMENT,`title` text,`slug` text,`description` text,`tech_stack` text,`image` text,`link` text,`order` integer DEFAULT 0,`created_at` datetime,CONSTRAINT `uni_landing_project_slug` UNIQUE (`slug`));
+CREATE TABLE `landing_projectimage` (`id` integer PRIMARY KEY AUTOINCREMENT,`project_id` integer,`image` text,`caption` text,`order` integer DEFAULT 0,CONSTRAINT `fk_landing_project_images` FOREIGN KEY (`project_id`) REFERENCES `landing_project`(`id`));
+CREATE TABLE `admin_user` (`id` integer PRIMARY KEY AUTOINCREMENT,`username` text,`password` text,`created_at` datetime,CONSTRAINT `uni_admin_user_username` UNIQUE (`username`));
+INSERT INTO admin_user VALUES(1,'admin','$2a$10$DjSXLPpJCN2X7Cp2OJe0o.k8n6AAY3E4ZYd494GGHCebaPfQSXeaq','2026-01-07 11:31:20.999443+07:00');
+DELETE FROM sqlite_sequence;
+INSERT INTO sqlite_sequence VALUES('admin_user',1);
+COMMIT;

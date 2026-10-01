@@ -1,0 +1,5 @@
+.env
+db.sqlite3
+/app
+/app_linux
+/tmp
