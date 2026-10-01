@@ -189,14 +189,14 @@
         </div>
         
         <h1 class="hero-stagger anime-hidden text-5xl md:text-7xl font-black mb-6 tracking-tight leading-tight">
-          <span class="block text-slate-800 dark:text-slate-200">Kurnia Gustino</span>
+          <span class="block text-slate-800 dark:text-slate-200">{{ .Settings.HeroTitle }}</span>
           <span class="block text-transparent bg-clip-text bg-gradient-to-r from-accent-cyan via-accent-blue to-accent-indigo">
-            Software Engineer.
+            {{ .Settings.HeroSubtitle }}
           </span>
         </h1>
         
         <p class="hero-stagger anime-hidden text-slate-600 dark:text-slate-400 mb-10 text-lg md:text-xl max-w-2xl font-light">
-          {{ .Tagline }} I specialize in architecting scalable backend systems, robust APIs, and seamless user experiences. Turning complex problems into elegant code.
+           I specialize in architecting scalable backend systems, robust APIs, and seamless user experiences. Turning complex problems into elegant code.
         </p>
         
         <div class="hero-stagger anime-hidden flex flex-wrap gap-4">
