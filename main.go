@@ -10,6 +10,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html/v2"
+	"github.com/gofiber/fiber/v2/middleware/filesystem"
 )
 
 func main() {
@@ -24,7 +25,11 @@ func main() {
 
 	// Serve static and media files
 	// Note: in Vercel we should probably use Vercel's edge cache for these, but this works for now.
-	app.Static("/public", "./public")
+	app.Use("/public", filesystem.New(filesystem.Config{
+		Root:       http.FS(publicFS),
+		PathPrefix: "public",
+		Browse:     true,
+	}))
 	app.Static("/media", "./media")
 	app.Static("/static", "./static")
 
