@@ -28,9 +28,22 @@ func main() {
 	app.Static("/media", "./media")
 	app.Static("/static", "./static")
 
-	// Routes
+	// Public Routes
 	app.Get("/", handlers.Home)
 	app.Get("/projects/:slug", handlers.ProjectDetail)
+	
+	// Auth Routes
+	app.Get("/login", handlers.LoginUI)
+	app.Post("/login", handlers.LoginAPI)
+	app.Get("/logout", handlers.LogoutAPI)
+
+	// Admin API & UI Routes (Protected)
+	admin := app.Group("/admin", handlers.AuthMiddleware)
+	admin.Get("/", handlers.AdminUI)
+	admin.Get("/api/projects", handlers.AdminListProjects)
+	admin.Post("/api/projects", handlers.AdminCreateProject)
+	admin.Delete("/api/projects/:id", handlers.AdminDeleteProject)
+	admin.Delete("/api/projects/image/:id", handlers.AdminDeleteProjectImage)
 
 	// Determine port for Vercel or local
 	port := os.Getenv("PORT")
