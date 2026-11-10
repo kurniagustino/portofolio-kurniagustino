@@ -96,10 +96,90 @@
       .glitch-wrapper {
         position: relative;
       }
+
+      /* --- Hormati prefers-reduced-motion: langsung tampil, tanpa gerak --- */
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        .js .anime-hidden {
+          opacity: 1 !important;
+          visibility: visible !important;
+          transform: none !important;
+        }
+        .animate-pulse-slow,
+        .animate-pulse,
+        .typing::after { animation: none !important; }
+        .nav-items a::after { transition: none; }
+      }
+
+      /* Karet terminal untuk efek ketik */
+      .typing::after {
+        content: "▮";
+        color: #06b6d4;
+        margin-left: 2px;
+        animation: caret-blink 1s steps(1) infinite;
+      }
+      @keyframes caret-blink { 50% { opacity: 0; } }
+
+      /* Navigasi: garis bawah menyala dari kiri saat hover/focus */
+      .nav-items a { position: relative; }
+      .nav-items a::after {
+        content: "";
+        position: absolute;
+        left: 16px;
+        right: 16px;
+        bottom: 6px;
+        height: 1px;
+        background: linear-gradient(to right, #06b6d4, #6366f1);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .nav-items a:hover::after,
+      .nav-items a:focus-visible::after { transform: scaleX(1); }
+
+      /* Progres baca di bawah navbar */
+      #scroll-progress {
+        position: absolute;
+        left: 0;
+        bottom: -1px;
+        height: 2px;
+        width: 0%;
+        background: linear-gradient(to right, #06b6d4, #3b82f6, #6366f1);
+        pointer-events: none;
+      }
+
+      /* Timeline pengalaman: garis tergambar saat masuk layar,
+         titik posisi terakhir berping sekali (bukan pulse tanpa henti) */
+      .js .timeline-track::before {
+        transform: scaleY(0);
+        transform-origin: top;
+        transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
+      }
+      .js .timeline-track.drawn::before { transform: scaleY(1); }
+      .exp-dot-current { position: relative; }
+      .js .timeline-track.drawn .exp-dot-current::after {
+        content: "";
+        position: absolute;
+        inset: -3px;
+        border-radius: 9999px;
+        border: 2px solid #06b6d4;
+        opacity: 0;
+        animation: ping-once 1.3s cubic-bezier(0, 0, 0.2, 1) 0.6s 2;
+      }
+      @keyframes ping-once {
+        0% { transform: scale(0.5); opacity: 0.9; }
+        100% { transform: scale(2.4); opacity: 0; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .js .timeline-track::before { transform: none !important; transition: none !important; }
+        .js .timeline-track.drawn .exp-dot-current::after { animation: none !important; }
+      }
     </style>
   
     {{ if .Settings.Favicon }}
     <link rel="icon" href="{{ .Settings.Favicon }}" type="image/x-icon">
+    {{ else }}
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%23020617%27/%3E%3Ctext%20x%3D%2732%27%20y%3D%2744%27%20font-family%3D%27ui-monospace%2Cmonospace%27%20font-size%3D%2726%27%20font-weight%3D%27700%27%20text-anchor%3D%27middle%27%20fill%3D%27%2306b6d4%27%3E%26lt%3B/%26gt%3B%3C/text%3E%3C/svg%3E" type="image/svg+xml">
     {{ end }}
 <link rel="stylesheet" href="/static/css/tailwind.css">
   </head>
@@ -116,6 +196,7 @@
 
     <!-- Navbar -->
     <nav class="fixed top-0 left-0 right-0 z-50 glass-nav border-b border-slate-200 dark:border-slate-800 transition-all duration-300" id="navbar">
+      <div id="scroll-progress" aria-hidden="true"></div>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-20">
           <!-- Brand -->
@@ -174,12 +255,12 @@
         
         <div class="hero-stagger anime-hidden font-mono text-accent-cyan text-sm mb-6 flex items-center gap-3">
           <span class="w-10 h-px bg-accent-cyan"></span>
-          whoami — siap menerima proyek baru
+          <span id="hero-type">whoami — siap menerima proyek baru</span>
         </div>
         
         <h1 class="hero-stagger anime-hidden text-5xl md:text-7xl font-black mb-6 tracking-tight leading-tight">
           <span class="block text-slate-800 dark:text-slate-200">{{ .Settings.HeroTitle }}</span>
-          <span class="block text-transparent bg-clip-text bg-gradient-to-r from-accent-cyan via-accent-blue to-accent-indigo">
+          <span id="hero-sub" class="block text-transparent bg-clip-text bg-gradient-to-r from-accent-cyan via-accent-blue to-accent-indigo">
             {{ .Settings.HeroSubtitle }}
           </span>
         </h1>
@@ -205,18 +286,18 @@
         </div>
         
         <!-- Terminal-like stats snippet -->
-        <div class="hero-stagger anime-hidden mt-16 p-4 glass-card rounded-xl border-l-4 border-l-accent-cyan max-w-sm">
+        <div class="anime-hidden hero-terminal mt-16 p-4 glass-card rounded-xl border-l-4 border-l-accent-cyan max-w-sm">
             <div class="flex gap-2 mb-2">
                 <div class="w-3 h-3 rounded-full bg-red-500"></div>
                 <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
                 <div class="w-3 h-3 rounded-full bg-green-500"></div>
             </div>
             <div class="font-mono text-xs text-slate-600 dark:text-slate-400 space-y-1">
-                <p><span class="text-accent-indigo">const</span> developer = {</p>
-                <p class="pl-4">fokus: <span class="text-accent-cyan">"Laravel &amp; Sistem IT"</span>,</p>
-                <p class="pl-4">proyek_terdeploy: <span class="text-accent-cyan">{{ .ProjectCount }}</span>,</p>
-                <p class="pl-4">status: <span class="text-green-500">"Open to Work"</span></p>
-                <p>}</p>
+                <p class="term-line"><span class="text-accent-indigo">const</span> developer = {</p>
+                <p class="term-line pl-4">fokus: <span class="text-accent-cyan">"Laravel &amp; Sistem IT"</span>,</p>
+                <p class="term-line pl-4">proyek_terdeploy: <span id="term-count" class="text-accent-cyan" data-count="{{ .ProjectCount }}">{{ .ProjectCount }}</span>,</p>
+                <p class="term-line pl-4">status: <span class="text-green-500">"Open to Work"</span></p>
+                <p class="term-line">}</p>
             </div>
         </div>
       </div>
@@ -411,12 +492,12 @@
             </div>
 
             {{ if .Experience }}
-            <div class="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-px before:bg-slate-300 dark:before:bg-slate-700">
+            <div class="space-y-8 relative timeline-track before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-px before:bg-slate-300 dark:before:bg-slate-700">
                 {{ range $i, $e := .Experience }}
                 <div class="exp-item anime-hidden relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
                     <div class="flex items-center justify-center w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 group-hover:border-accent-cyan group-hover:shadow-[0_0_10px_rgba(6,182,212,0.5)] transition-all duration-300 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
                         {{ if eq $i 0 }}
-                        <div class="w-3 h-3 bg-accent-cyan rounded-full animate-pulse"></div>
+                        <div class="exp-dot-current w-3 h-3 bg-accent-cyan rounded-full"></div>
                         {{ else }}
                         <div class="w-2 h-2 bg-slate-500 rounded-full"></div>
                         {{ end }}
@@ -644,7 +725,121 @@
 
         // --- Anime.js Animations ---
         document.addEventListener("DOMContentLoaded", () => {
-            // Initial Hero Animation
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            // Indikator progres baca — jalan di kedua jalur (bukan dekorasi)
+            initScrollProgress();
+
+            // Bila pengguna meminta kurangi gerak ATAU anime.js gagal dimuat:
+            // langsung tampilkan semua konten, tanpa menyembunyikan apa pun.
+            if (reduceMotion || typeof anime === 'undefined') {
+                document.querySelectorAll('.anime-hidden').forEach(el => el.classList.remove('anime-hidden'));
+                return;
+            }
+
+            /* ---------- Helper efek ---------- */
+
+            // Efek ketik dengan karet berkedip (motif terminal)
+            function typeText(el, cps) {
+                if (!el) return;
+                const final = el.textContent;
+                if (!final) return;
+                el.textContent = '';
+                el.classList.add('typing');
+                let i = 0;
+                const step = () => {
+                    i++;
+                    el.textContent = final.slice(0, i);
+                    if (i < final.length) {
+                        setTimeout(step, 1000 / cps);
+                    } else {
+                        setTimeout(() => el.classList.remove('typing'), 800);
+                    }
+                };
+                step();
+            }
+
+            // Efek decode: huruf acak menyala lalu menyatu ke teks asli
+            function scrambleText(el, duration) {
+                if (!el) return;
+                const final = el.textContent;
+                const glyphs = '#%&*+=<>/\\|?~^{}[]';
+                const start = performance.now();
+                const frame = now => {
+                    const p = Math.min(1, (now - start) / duration);
+                    const revealed = Math.floor(final.length * p);
+                    let out = '';
+                    for (let i = 0; i < final.length; i++) {
+                        const ch = final[i];
+                        if (i < revealed || ch === ' ' || ch === '\n') out += ch;
+                        else out += glyphs[Math.floor(Math.random() * glyphs.length)];
+                    }
+                    el.textContent = out;
+                    if (p < 1) requestAnimationFrame(frame);
+                    else el.textContent = final;
+                };
+                requestAnimationFrame(frame);
+            }
+
+            // Angka naik dari 0 dengan easing keluar (tanpa dependensi)
+            function countUp(el, to, duration) {
+                if (!el || !isFinite(to)) return;
+                const start = performance.now();
+                const step = now => {
+                    const p = Math.min(1, (now - start) / duration);
+                    const eased = 1 - Math.pow(1 - p, 3);
+                    el.textContent = Math.round(to * eased);
+                    if (p < 1) requestAnimationFrame(step);
+                    else el.textContent = to;
+                };
+                requestAnimationFrame(step);
+            }
+
+            // Label mono tiap section "dirender" per-huruf seperti terminal
+            function renderLabel(el) {
+                if (!el || el.dataset.rendered) return;
+                el.dataset.rendered = '1';
+                const text = el.textContent;
+                const frag = document.createDocumentFragment();
+                for (const ch of text) {
+                    const s = document.createElement('span');
+                    s.textContent = ch === ' ' ? '\u00A0' : ch;
+                    s.style.display = 'inline-block';
+                    frag.appendChild(s);
+                }
+                el.textContent = '';
+                el.appendChild(frag);
+                anime({
+                    targets: Array.from(el.children),
+                    opacity: [0, 1],
+                    translateY: [3, 0],
+                    delay: anime.stagger(22),
+                    duration: 320,
+                    easing: 'easeOutQuad'
+                });
+            }
+
+            // Progres baca: lebar bar mengikuti posisi scroll (rAF, passive)
+            function initScrollProgress() {
+                const bar = document.getElementById('scroll-progress');
+                if (!bar) return;
+                let ticking = false;
+                const update = () => {
+                    const doc = document.documentElement;
+                    const max = doc.scrollHeight - doc.clientHeight;
+                    bar.style.width = (max > 0 ? (doc.scrollTop / max) * 100 : 0) + '%';
+                    ticking = false;
+                };
+                window.addEventListener('scroll', () => {
+                    if (!ticking) {
+                        ticking = true;
+                        requestAnimationFrame(update);
+                    }
+                }, { passive: true });
+                update();
+            }
+
+            /* ---------- Momen fokal: urutan pembuka bertema terminal ---------- */
             anime.timeline({
                 easing: 'easeOutExpo'
             })
@@ -652,8 +847,8 @@
                 targets: '.nav-brand',
                 opacity: [0, 1],
                 translateX: [-20, 0],
-                duration: 800,
-                begin: function(anim) {
+                duration: 700,
+                begin: function() {
                     document.querySelector('.nav-brand').classList.remove('anime-hidden');
                 }
             })
@@ -661,22 +856,47 @@
                 targets: '.nav-items > *',
                 opacity: [0, 1],
                 translateY: [-10, 0],
-                delay: anime.stagger(100),
-                duration: 600,
-                begin: function(anim) {
+                delay: anime.stagger(60),
+                duration: 450,
+                begin: function() {
                     document.querySelectorAll('.nav-items > *').forEach(el => el.classList.remove('anime-hidden'));
                 }
-            }, '-=400')
+            }, '-=500')
             .add({
                 targets: '.hero-stagger',
                 opacity: [0, 1],
                 translateY: [20, 0],
-                delay: anime.stagger(150),
-                duration: 800,
-                begin: function(anim) {
+                delay: anime.stagger(100),
+                duration: 650,
+                begin: function() {
                     document.querySelectorAll('.hero-stagger').forEach(el => el.classList.remove('anime-hidden'));
+                    // Label mono diketik, judul gradasi didecode
+                    typeText(document.getElementById('hero-type'), 40);
+                    setTimeout(() => scrambleText(document.getElementById('hero-sub'), 650), 550);
                 }
-            }, '-=200');
+            }, '-=700')
+            .add({
+                targets: '.hero-terminal',
+                opacity: [0, 1],
+                translateY: [24, 0],
+                duration: 600,
+                begin: function() {
+                    document.querySelector('.hero-terminal').classList.remove('anime-hidden');
+                    anime.set('.term-line', { opacity: 0, translateX: -8 });
+                }
+            }, '-=600')
+            .add({
+                targets: '.term-line',
+                opacity: [0, 1],
+                translateX: [-8, 0],
+                delay: anime.stagger(70),
+                duration: 350,
+                easing: 'easeOutQuad',
+                complete: function() {
+                    const counter = document.getElementById('term-count');
+                    if (counter) countUp(counter, parseInt(counter.dataset.count, 10) || 0, 700);
+                }
+            }, '-=400');
 
             // Scroll Reveal Animations using Intersection Observer + Anime.js
             const observerOptions = {
@@ -688,6 +908,9 @@
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         const target = entry.target;
+
+                        // Label mono section dirender per-huruf (motif terminal)
+                        target.querySelectorAll('h3.font-mono').forEach(renderLabel);
                         
                         // About Section
                         if (target.id === 'about') {
@@ -723,10 +946,10 @@
                             anime({
                                 targets: '.skill-card',
                                 opacity: [0, 1],
-                                scale: [0.9, 1],
-                                delay: anime.stagger(50),
+                                scale: [0.94, 1],
+                                delay: anime.stagger(60),
                                 duration: 600,
-                                easing: 'easeOutBack',
+                                easing: 'easeOutQuart',
                                 begin: () => document.querySelectorAll('.skill-card').forEach(el => el.classList.remove('anime-hidden'))
                             });
                         }
@@ -752,24 +975,33 @@
                             });
                         }
 
-                        // Experience Section
+                        // Experience Section — arah masuk mengikuti sisi kartu (desktop)
                         if (target.id === 'experience') {
+                            const track = target.querySelector('.timeline-track');
+                            if (track) requestAnimationFrame(() => track.classList.add('drawn'));
                             anime({
                                 targets: '.exp-header',
                                 opacity: [0, 1],
                                 translateY: [20, 0],
                                 duration: 800,
-                                easing: 'easeOutQuad',
+                                easing: 'easeOutQuart',
                                 begin: () => document.querySelector('.exp-header').classList.remove('anime-hidden')
                             });
-                            anime({
-                                targets: '.exp-item',
-                                opacity: [0, 1],
-                                translateY: [30, 0],
-                                delay: anime.stagger(200),
-                                duration: 800,
-                                easing: 'easeOutQuart',
-                                begin: () => document.querySelectorAll('.exp-item').forEach(el => el.classList.remove('anime-hidden'))
+                            const expItems = document.querySelectorAll('.exp-item');
+                            const wide = window.matchMedia('(min-width: 768px)').matches;
+                            expItems.forEach((el, i) => {
+                                const opts = {
+                                    targets: el,
+                                    opacity: [0, 1],
+                                    duration: 700,
+                                    delay: i * 130,
+                                    easing: 'easeOutQuart',
+                                    begin: () => el.classList.remove('anime-hidden')
+                                };
+                                // Ganjil (baris pertama) kartu ada di kiri → masuk dari kiri
+                                if (wide) opts.translateX = [(i % 2 ? 40 : -40), 0];
+                                else opts.translateY = [30, 0];
+                                anime(opts);
                             });
                         }
 
@@ -779,14 +1011,14 @@
                                 targets: '.contact-box',
                                 opacity: [0, 1],
                                 translateY: [40, 0],
-                                duration: 1000,
-                                easing: 'easeOutBack',
+                                duration: 900,
+                                easing: 'easeOutQuart',
                                 begin: () => document.querySelector('.contact-box').classList.remove('anime-hidden')
                             });
                         }
 
-                        // Section baru (layanan, pendidikan, testimoni, blog):
-                        // tampilkan seluruh elemennya tanpa animasi khusus
+                        // Section lain (layanan, pendidikan, testimoni, blog):
+                        // reveal tenang, kartu naik bertahap
                         const knownIds = ['about', 'skills', 'projects', 'experience', 'contact'];
                         if (!knownIds.includes(target.id)) {
                             const items = target.querySelectorAll('.anime-hidden');
@@ -794,10 +1026,10 @@
                                 anime({
                                     targets: items,
                                     opacity: [0, 1],
-                                    translateY: [20, 0],
-                                    delay: anime.stagger(80),
-                                    duration: 700,
-                                    easing: 'easeOutQuad',
+                                    translateY: [24, 0],
+                                    delay: anime.stagger(90),
+                                    duration: 650,
+                                    easing: 'easeOutQuart',
                                     begin: () => items.forEach(el => el.classList.remove('anime-hidden'))
                                 });
                             }

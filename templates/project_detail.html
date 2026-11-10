@@ -77,9 +77,17 @@
         html { scroll-behavior: auto; }
       }
       html { scroll-behavior: smooth; }
+    
+      /* Progres baca di bawah navbar; .fade-up ditahan lalu dilepas saat masuk layar */
+      #scroll-progress { position: absolute; left: 0; bottom: -1px; height: 2px; width: 0%;
+        background: linear-gradient(to right, #06b6d4, #3b82f6, #6366f1); pointer-events: none; }
+      .js .fade-up { animation-play-state: paused; }
+      @media print { .fade-up { animation: none !important; } }
     </style>
     {{ if .Settings.Favicon }}
     <link rel="icon" href="{{ .Settings.Favicon }}" type="image/x-icon">
+    {{ else }}
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%23020617%27/%3E%3Ctext%20x%3D%2732%27%20y%3D%2744%27%20font-family%3D%27ui-monospace%2Cmonospace%27%20font-size%3D%2726%27%20font-weight%3D%27700%27%20text-anchor%3D%27middle%27%20fill%3D%27%2306b6d4%27%3E%26lt%3B/%26gt%3B%3C/text%3E%3C/svg%3E" type="image/svg+xml">
     {{ end }}
   <link rel="stylesheet" href="/static/css/tailwind.css">
   </head>
@@ -90,6 +98,7 @@
 
     <!-- Navbar (same as homepage) -->
     <nav class="fixed top-0 left-0 right-0 z-50 glass-nav border-b border-slate-200 dark:border-slate-800">
+      <div id="scroll-progress" aria-hidden="true"></div>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-20">
           <a href="/" class="text-xl font-black tracking-tight font-mono flex items-center gap-2">
@@ -317,6 +326,41 @@
         html.classList.toggle('dark');
         localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
       });
+    </script>
+      <script>
+      // Konten .fade-up beranimasi saat masuk layar (bukan saat load),
+      // plus bar progres baca. prefers-reduced-motion ditangani oleh CSS.
+      (function () {
+        var items = document.querySelectorAll('.fade-up');
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) {
+          items.forEach(function (el) { el.style.animationPlayState = 'running'; });
+        } else {
+          var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+              if (e.isIntersecting) {
+                e.target.style.animationPlayState = 'running';
+                io.unobserve(e.target);
+              }
+            });
+          }, { rootMargin: '0px 0px -40px 0px', threshold: 0.05 });
+          items.forEach(function (el) { io.observe(el); });
+        }
+
+        var bar = document.getElementById('scroll-progress');
+        if (bar) {
+          var ticking = false;
+          var update = function () {
+            var doc = document.documentElement;
+            var max = doc.scrollHeight - doc.clientHeight;
+            bar.style.width = (max > 0 ? (doc.scrollTop / max) * 100 : 0) + '%';
+            ticking = false;
+          };
+          window.addEventListener('scroll', function () {
+            if (!ticking) { ticking = true; requestAnimationFrame(update); }
+          }, { passive: true });
+          update();
+        }
+      })();
     </script>
   </body>
 </html>
