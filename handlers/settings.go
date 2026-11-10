@@ -16,6 +16,23 @@ func GetSettingsAPI(c *fiber.Ctx) error {
 	return c.JSON(setting)
 }
 
+// GetSettings mengambil pengaturan situs (baris tunggal ID=1)
+// dengan nilai default bila belum ada.
+func GetSettings() models.SiteSetting {
+	var settings models.SiteSetting
+	database.DB.Where(models.SiteSetting{ID: 1}).Attrs(models.SiteSetting{
+		SiteTitle:    "Kurnia Gustino - Portfolio",
+		HeroTitle:    "Kurnia Gustino Pratama",             // baris utama (nama)
+		HeroSubtitle: "IT Programmer & Software Developer", // baris kedua (peran)
+		AboutText:    "Terbiasa menangani pekerjaan IT secara menyeluruh...",
+		FooterText:   "© 2026 Kurnia Gustino",
+		GithubLink:   "https://github.com/kurniagustino",
+		LinkedInLink: "https://www.linkedin.com/in/kurnia-gustino-pratama-17022439a/",
+		EmailLink:    "mailto:kurniagustino@gmail.com",
+	}).FirstOrCreate(&settings)
+	return settings
+}
+
 // UpdateSettingsAPI updates the site settings
 func UpdateSettingsAPI(c *fiber.Ctx) error {
 	var setting models.SiteSetting
@@ -27,7 +44,7 @@ func UpdateSettingsAPI(c *fiber.Ctx) error {
 	if err := c.BodyParser(&setting); err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "Invalid input"})
 	}
-	
+
 	// Force ID to 1 to maintain single row
 	setting.ID = 1
 

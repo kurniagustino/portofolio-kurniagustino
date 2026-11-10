@@ -3,3 +3,15 @@ db.sqlite3
 /app
 /app_linux
 /tmp
+
+# Artefak lokal & biner — jangan ikut di-commit
+.DS_Store
+server.log
+*.log
+dump.sql
+
+# Hasil upload admin (foto profil, gambar proyek, cv.pdf)
+/media/
+
+# Alat bantu sementara
+/tools/

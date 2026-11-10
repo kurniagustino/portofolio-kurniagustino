@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tulisan — {{ if .Settings.SiteTitle }}{{ .Settings.SiteTitle }}{{ else }}Portfolio{{ end }}</title>
+    <meta name="description" content="Catatan dan artikel teknis dari {{ .Settings.HeroTitle }}.">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="canonical" href="{{ .Canonical }}">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="id_ID">
+    <meta property="og:title" content="Tulisan — {{ .Settings.HeroTitle }}">
+    <meta property="og:description" content="Catatan dan artikel teknis dari {{ .Settings.HeroTitle }}.">
+    <meta property="og:url" content="{{ .Canonical }}">
+    {{ if .OGImage }}<meta property="og:image" content="{{ .OGImage }}">{{ end }}
+    <meta name="twitter:card" content="{{ if .OGImage }}summary_large_image{{ else }}summary{{ end }}">
+    <meta name="twitter:title" content="Tulisan — {{ .Settings.HeroTitle }}">
+    <meta name="twitter:description" content="Catatan dan artikel teknis dari {{ .Settings.HeroTitle }}.">
+    {{ if .OGImage }}<meta name="twitter:image" content="{{ .OGImage }}">{{ end }}
+    <script>document.documentElement.classList.add('js');</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+      :root { --glass-bg: rgba(255,255,255,0.6); --glass-border: rgba(226,232,240,0.6); }
+      .dark { --glass-bg: rgba(15,23,42,0.4); --glass-border: rgba(51,65,85,0.3); }
+      .glass-card { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); }
+      .glass-nav { background: rgba(248,250,252,0.7); backdrop-filter: blur(20px); }
+      .dark .glass-nav { background: rgba(2,6,23,0.7); }
+      .bg-grid-slate-100 {
+        background-size: 40px 40px;
+        background-image: linear-gradient(to right, rgba(241,245,249,0.5) 1px, transparent 1px),
+                          linear-gradient(to bottom, rgba(241,245,249,0.5) 1px, transparent 1px);
+      }
+      .dark .bg-grid-slate-100 {
+        background-size: 40px 40px;
+        background-image: linear-gradient(to right, rgba(30,41,59,0.5) 1px, transparent 1px),
+                          linear-gradient(to bottom, rgba(30,41,59,0.5) 1px, transparent 1px);
+      }
+      .fade-up { animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both; }
+      @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+      @media (prefers-reduced-motion: reduce) { .fade-up { animation: none; } }
+    </style>
+    {{ if .Settings.Favicon }}
+    <link rel="icon" href="{{ .Settings.Favicon }}" type="image/x-icon">
+    {{ end }}
+  <link rel="stylesheet" href="/static/css/tailwind.css">
+  </head>
+  <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased selection:bg-accent-cyan selection:text-white overflow-x-hidden">
+    <div class="fixed inset-0 z-[-1] bg-grid-slate-100 [mask-image:linear-gradient(to_bottom,white,transparent)]"></div>
+
+    <nav class="fixed top-0 left-0 right-0 z-50 glass-nav border-b border-slate-200 dark:border-slate-800">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+        <a href="/" class="text-xl font-black tracking-tight font-mono flex items-center gap-1">
+          <span class="text-accent-cyan">&lt;</span><span class="dark:text-white text-slate-900">Kurnia</span><span class="text-accent-cyan">/&gt;</span>
+        </a>
+        <div class="flex items-center gap-1">
+          <a href="/" class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-accent-cyan px-3 py-2 transition-colors">Portfolio</a>
+          <a href="/resume" class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-accent-cyan px-3 py-2 transition-colors">Resume</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="pt-32 pb-24 px-4">
+      <div class="max-w-4xl mx-auto">
+        <header class="fade-up mb-12">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-px bg-slate-400"></span>
+            <h3 class="text-xs font-mono text-slate-500 uppercase tracking-widest">Tulisan</h3>
+          </div>
+          <h1 class="text-4xl md:text-5xl font-black tracking-tight text-slate-800 dark:text-white">Catatan &amp; <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-cyan to-accent-indigo">Artikel</span></h1>
+          <p class="text-slate-500 dark:text-slate-400 mt-4 font-light max-w-2xl">Tulisan seputar pengembangan aplikasi, basis data, dan pengalaman kerja di lapangan.</p>
+        </header>
+
+        {{ if .Posts }}
+        <div class="space-y-5">
+          {{ range $i, $item := .Posts }}
+          {{ $p := $item.Post }}
+          <a href="/blog/{{ $p.Slug }}" class="fade-up block glass-card rounded-xl p-6 md:p-8 group hover:border-accent-cyan/40 transition-all duration-300" style="animation-delay: {{ $i }}00ms">
+            <div class="flex flex-wrap items-center gap-3 mb-3">
+              <span class="font-mono text-[10px] uppercase tracking-widest text-accent-cyan">{{ $p.Category }}</span>
+              <span class="font-mono text-[10px] text-slate-400">{{ $p.CreatedAt.Format "02 January 2006" }}</span>
+            </div>
+            <h2 class="text-xl md:text-2xl font-bold text-slate-800 dark:text-white group-hover:text-accent-cyan transition-colors">{{ $p.Title }}</h2>
+            {{ if $item.Excerpt }}
+            <p class="text-slate-500 dark:text-slate-400 mt-3 text-sm leading-relaxed font-light">{{ $item.Excerpt }}</p>
+            {{ end }}
+            <span class="inline-flex items-center gap-1 mt-4 text-xs font-bold text-slate-700 dark:text-slate-300 group-hover:text-accent-cyan transition-colors">
+              Baca selengkapnya
+              <svg class="w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </span>
+          </a>
+          {{ end }}
+        </div>
+        {{ else }}
+        <div class="fade-up glass-card rounded-xl p-10 text-center">
+          <p class="font-mono text-sm text-slate-500">Belum ada tulisan.</p>
+          <p class="text-sm text-slate-500 mt-2">Tulis artikel pertama lewat <a href="/login" class="text-accent-cyan hover:underline">panel admin</a>.</p>
+        </div>
+        {{ end }}
+      </div>
+    </main>
+
+    <footer class="py-8 border-t border-slate-200 dark:border-slate-800/50">
+      <div class="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+        <p class="text-slate-500 font-mono text-xs">{{ .Settings.FooterText }}</p>
+        <a href="/" class="font-mono text-xs text-accent-cyan hover:underline">&lt;Kurnia /&gt;</a>
+      </div>
+    </footer>
+  </body>
+</html>

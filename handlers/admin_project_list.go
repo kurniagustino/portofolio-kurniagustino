@@ -9,7 +9,7 @@ import (
 
 func AdminListProjects(c *fiber.Ctx) error {
 	var projects []models.Project
-	database.DB.Preload("Images").Order("order asc, created_at desc").Find(&projects)
+	database.DB.Preload("Images").Order("`order` asc, created_at desc").Find(&projects)
 	return c.JSON(projects)
 }
 

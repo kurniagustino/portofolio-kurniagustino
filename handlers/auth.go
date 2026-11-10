@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"os"
 	"portfolio_kurnia/database"
 	"portfolio_kurnia/models"
+	"sync"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,7 +12,23 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-const jwtSecret = "RAHASIA_NEGARA_SANGAT_AMAN" // Ganti dengan secret key yang aman (sebaiknya dari ENV)
+var (
+	jwtSecretOnce sync.Once
+	jwtSecretVal  string
+)
+
+// jwtSecret mengambil secret JWT dari env JWT_SECRET.
+// Nilai lama dipakai sebagai fallback agar tidak ada yang terkunci keluar
+// bila env belum diatur — tetap disarankan mengatur JWT_SECRET di .env.
+func jwtSecret() string {
+	jwtSecretOnce.Do(func() {
+		jwtSecretVal = os.Getenv("JWT_SECRET")
+		if jwtSecretVal == "" {
+			jwtSecretVal = "RAHASIA_NEGARA_SANGAT_AMAN"
+		}
+	})
+	return jwtSecretVal
+}
 
 // LoginUI merender halaman login
 func LoginUI(c *fiber.Ctx) error {
@@ -49,7 +67,7 @@ func LoginAPI(c *fiber.Ctx) error {
 		"exp": time.Now().Add(time.Hour * 24).Unix(), // Berlaku 24 jam
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	t, err := token.SignedString([]byte(jwtSecret))
+	t, err := token.SignedString([]byte(jwtSecret()))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal generate token"})
 	}
@@ -90,7 +108,7 @@ func AuthMiddleware(c *fiber.Ctx) error {
 	}
 
 	token, err := jwt.Parse(cookie, func(t *jwt.Token) (interface{}, error) {
-		return []byte(jwtSecret), nil
+		return []byte(jwtSecret()), nil
 	})
 
 	if err != nil || !token.Valid {

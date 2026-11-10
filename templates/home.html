@@ -14,42 +14,29 @@
       }
     </style>
     <meta charset="UTF-8" />
-    <title>{{ .Settings.HeroSubtitle }} - Software Engineer</title>
+    {{ $title := or .Settings.SiteTitle (printf "%s — Portfolio" .Settings.HeroTitle) }}
+    {{ $desc := or .Settings.AboutText (printf "%s — %s" .Settings.HeroTitle .Settings.HeroSubtitle) }}
+    <title>{{ $title }}</title>
+    <meta name="description" content="{{ $desc }}">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="canonical" href="{{ .Canonical }}">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="id_ID">
+    <meta property="og:site_name" content="{{ $title }}">
+    <meta property="og:title" content="{{ $title }}">
+    <meta property="og:description" content="{{ $desc }}">
+    <meta property="og:url" content="{{ .Canonical }}">
+    {{ if .OGImage }}<meta property="og:image" content="{{ .OGImage }}">{{ end }}
+    <meta name="twitter:card" content="{{ if .OGImage }}summary_large_image{{ else }}summary{{ end }}">
+    <meta name="twitter:title" content="{{ $title }}">
+    <meta name="twitter:description" content="{{ $desc }}">
+    {{ if .OGImage }}<meta name="twitter:image" content="{{ .OGImage }}">{{ end }}
+    <script type="application/ld+json">{{ .Schema }}</script>
+    <script>document.documentElement.classList.add('js');</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              mono: ['Fira Code', 'monospace'],
-            },
-            colors: {
-              accent: {
-                cyan: '#06b6d4',
-                blue: '#3b82f6',
-                indigo: '#6366f1',
-                purple: '#a855f7',
-              },
-              slate: {
-                850: '#151e2e',
-                900: '#0f172a',
-                950: '#020617',
-              }
-            },
-            animation: {
-              'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-            }
-          }
-        }
-      }
-    </script>
     <style>
       :root {
         --glass-bg: rgba(255, 255, 255, 0.6);
@@ -93,14 +80,15 @@
         background-image: linear-gradient(to right, rgba(241, 245, 249, 0.5) 1px, transparent 1px),
                           linear-gradient(to bottom, rgba(241, 245, 249, 0.5) 1px, transparent 1px);
       }
-      .dark .bg-grid-slate-900 {
+      .dark .bg-grid-slate-100 {
         background-size: 40px 40px;
         background-image: linear-gradient(to right, rgba(30, 41, 59, 0.5) 1px, transparent 1px),
                           linear-gradient(to bottom, rgba(30, 41, 59, 0.5) 1px, transparent 1px);
       }
 
-      /* Base initial states for Anime.js */
-      .anime-hidden {
+      /* Base initial states for Anime.js
+         Hanya aktif bila JS menyala (.js) supaya konten tetap terlihat tanpa JS */
+      .js .anime-hidden {
         opacity: 0;
         visibility: hidden;
       }
@@ -113,11 +101,12 @@
     {{ if .Settings.Favicon }}
     <link rel="icon" href="{{ .Settings.Favicon }}" type="image/x-icon">
     {{ end }}
-</head>
+<link rel="stylesheet" href="/static/css/tailwind.css">
+  </head>
   <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased selection:bg-accent-cyan selection:text-white overflow-x-hidden transition-colors duration-500">
     
     <!-- Technical Background Grid -->
-    <div class="fixed inset-0 z-[-1] bg-grid-slate-100 dark:bg-grid-slate-900 [mask-image:linear-gradient(to_bottom,white,transparent)]"></div>
+    <div class="fixed inset-0 z-[-1] bg-grid-slate-100 [mask-image:linear-gradient(to_bottom,white,transparent)]"></div>
     
     <!-- Ambient Glows -->
     <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
@@ -144,6 +133,8 @@
               {{ range .Menus }}
               <a href="{{ .URL }}" class="anime-hidden text-slate-600 dark:text-slate-400 hover:text-accent-cyan dark:hover:text-accent-cyan px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300">{{ .Label }}</a>
               {{ end }}
+              <a href="/resume" class="anime-hidden text-slate-600 dark:text-slate-400 hover:text-accent-cyan dark:hover:text-accent-cyan px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300">Resume</a>
+              <a href="/blog" class="anime-hidden text-slate-600 dark:text-slate-400 hover:text-accent-cyan dark:hover:text-accent-cyan px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300">Blog</a>
               
               <!-- Theme Toggle -->
               <div class="flex items-center ml-4 pl-4 border-l border-slate-200 dark:border-slate-800 anime-hidden">
@@ -166,11 +157,13 @@
       </div>
 
       <!-- Mobile Menu -->
-      <div class="hidden md:hidden glass-nav border-b border-slate-200 dark:border-slate-800" id="mobile-menu">
+      <div class="hidden glass-nav border-b border-slate-200 dark:border-slate-800" id="mobile-menu">
         <div class="px-4 pt-2 pb-6 space-y-1">
           {{ range .Menus }}
           <a href="{{ .URL }}" class="mobile-link block px-4 py-3 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">{{ .Label }}</a>
           {{ end }}
+          <a href="/resume" class="mobile-link block px-4 py-3 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">Resume</a>
+          <a href="/blog" class="mobile-link block px-4 py-3 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">Blog</a>
         </div>
       </div>
     </nav>
@@ -181,7 +174,7 @@
         
         <div class="hero-stagger anime-hidden font-mono text-accent-cyan text-sm mb-6 flex items-center gap-3">
           <span class="w-10 h-px bg-accent-cyan"></span>
-          System initialized. Hello, World.
+          whoami — siap menerima proyek baru
         </div>
         
         <h1 class="hero-stagger anime-hidden text-5xl md:text-7xl font-black mb-6 tracking-tight leading-tight">
@@ -192,17 +185,23 @@
         </h1>
         
         <p class="hero-stagger anime-hidden text-slate-600 dark:text-slate-400 mb-10 text-lg md:text-xl max-w-2xl font-light">
-           I specialize in architecting scalable backend systems, robust APIs, and seamless user experiences. Turning complex problems into elegant code.
+           Saya membangun aplikasi web internal, API, dan sistem IT untuk industri kesehatan maupun enterprise — mulai dari basis data Laravel hingga jaringan MikroTik di lapangan.
         </p>
         
         <div class="hero-stagger anime-hidden flex flex-wrap gap-4">
           <a href="#projects" class="group relative px-8 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg font-semibold transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] active:scale-95 flex items-center gap-2">
-            View Repository
+            Lihat Proyek
             <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
           </a>
           <a href="#contact" class="px-8 py-3 glass-card text-slate-800 dark:text-slate-200 rounded-lg font-semibold hover:border-accent-cyan/50 transition-all duration-300 active:scale-95">
-            Initialize Contact
+            Hubungi Saya
           </a>
+          {{ if .Settings.CVLink }}
+          <a href="{{ .Settings.CVLink }}" target="_blank" rel="noopener noreferrer" class="px-8 py-3 glass-card text-slate-800 dark:text-slate-200 rounded-lg font-semibold hover:border-accent-cyan/50 transition-all duration-300 active:scale-95 flex items-center gap-2">
+            Unduh CV
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          </a>
+          {{ end }}
         </div>
         
         <!-- Terminal-like stats snippet -->
@@ -214,9 +213,9 @@
             </div>
             <div class="font-mono text-xs text-slate-600 dark:text-slate-400 space-y-1">
                 <p><span class="text-accent-indigo">const</span> developer = {</p>
-                <p class="pl-4">experience: <span class="text-accent-cyan">"3+ Years"</span>,</p>
-                <p class="pl-4">projects_deployed: <span class="text-accent-cyan">20</span>,</p>
-                <p class="pl-4">status: <span class="text-green-500">"Online"</span></p>
+                <p class="pl-4">fokus: <span class="text-accent-cyan">"Laravel &amp; Sistem IT"</span>,</p>
+                <p class="pl-4">proyek_terdeploy: <span class="text-accent-cyan">{{ .ProjectCount }}</span>,</p>
+                <p class="pl-4">status: <span class="text-green-500">"Open to Work"</span></p>
                 <p>}</p>
             </div>
         </div>
@@ -230,20 +229,27 @@
                 <div class="relative group about-image anime-hidden">
                     <div class="absolute -inset-1 bg-gradient-to-r from-accent-cyan to-accent-indigo rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
                     <div class="relative aspect-[4/5] rounded-xl overflow-hidden glass-card border border-slate-700/50">
-                        <img src="https://image.pollinations.ai/prompt/professional-software-engineer-portrait-clean-minimalist-cyberpunk-lighting-technical-style?width=600&height=800&nologo=true" alt="Profile" class="w-full h-full object-cover grayscale-[0.5] hover:grayscale-0 transition-all duration-700">
+                        {{ if .Settings.ProfileImage }}
+                        <img src="{{ .Settings.ProfileImage }}" alt="Foto {{ .Settings.HeroTitle }}" class="w-full h-full object-cover grayscale-[0.5] hover:grayscale-0 transition-all duration-700">
+                        {{ else }}
+                        <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950">
+                            <span class="font-mono text-6xl font-black text-accent-cyan">KG</span>
+                            <span class="mt-4 font-mono text-[10px] text-slate-400 tracking-widest uppercase">Foto Profil Belum Dipasang</span>
+                        </div>
+                        {{ end }}
                         <!-- Tech overlay -->
                         <div class="absolute bottom-4 right-4 bg-slate-900/80 backdrop-blur-sm border border-slate-700 px-3 py-1 rounded text-[10px] font-mono text-accent-cyan">
-                            SYS.USR_AUTH_V1
+                            KURNIA_GUSTINO
                         </div>
                     </div>
                 </div>
                 <div class="about-text">
                     <div class="flex items-center gap-3 mb-4 anime-hidden about-item">
                         <span class="w-8 h-px bg-slate-400"></span>
-                        <h3 class="text-xs font-mono text-slate-500 uppercase tracking-widest">About_Me</h3>
+                        <h3 class="text-xs font-mono text-slate-500 uppercase tracking-widest">Tentang_Saya</h3>
                     </div>
                     <h2 class="text-3xl md:text-5xl font-bold mb-8 tracking-tight text-slate-800 dark:text-white anime-hidden about-item">
-                        Architecting <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-cyan to-accent-blue">Digital</span> Foundations.
+                        Membangun <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-cyan to-accent-blue">Fondasi</span> Digital yang Andal.
                     </h2>
                     <p class="text-slate-600 dark:text-slate-400 text-lg leading-relaxed mb-8 font-light anime-hidden about-item">
                         {{ .Settings.AboutText }}
@@ -253,17 +259,52 @@
                         <div class="glass-card p-6 rounded-xl border-t-2 border-t-accent-cyan">
                             <svg class="w-6 h-6 text-accent-cyan mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
                             <h4 class="font-bold text-slate-800 dark:text-white mb-2">Clean Code</h4>
-                            <p class="text-xs text-slate-500">Maintainable, scalable, and efficient architectures.</p>
+                            <p class="text-xs text-slate-500">Kode yang rapi, terawat, dan siap dikembangkan.</p>
                         </div>
                         <div class="glass-card p-6 rounded-xl border-t-2 border-t-accent-indigo">
                             <svg class="w-6 h-6 text-accent-indigo mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
                             <h4 class="font-bold text-slate-800 dark:text-white mb-2">Database Design</h4>
-                            <p class="text-xs text-slate-500">Optimized schemas for performance.</p>
+                            <p class="text-xs text-slate-500">Skema basis data yang efisien dan performa.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </section>
+
+    <!-- Services -->
+    <section class="py-32 relative" id="services">
+      <div class="max-w-6xl mx-auto px-4 scroll-section">
+        <div class="mb-16 services-header anime-hidden">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-px bg-slate-400"></span>
+            <h3 class="text-xs font-mono text-slate-500 uppercase tracking-widest">Layanan</h3>
+          </div>
+          <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-slate-800 dark:text-white">Apa yang Bisa <span class="text-accent-cyan">Saya Kerjakan</span></h2>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="service-card anime-hidden glass-card rounded-xl p-6 border-t-2 border-t-accent-cyan hover:-translate-y-1 transition-all duration-300">
+            <span class="font-mono text-xs text-accent-cyan">01</span>
+            <h4 class="text-lg font-bold mt-3 mb-2 text-slate-800 dark:text-white">Aplikasi Web Internal</h4>
+            <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Portal bisnis dan sistem informasi berbasis Laravel/Filament — dari desain basis data sampai deployment.</p>
+          </div>
+          <div class="service-card anime-hidden glass-card rounded-xl p-6 border-t-2 border-t-accent-blue hover:-translate-y-1 transition-all duration-300">
+            <span class="font-mono text-xs text-accent-blue">02</span>
+            <h4 class="text-lg font-bold mt-3 mb-2 text-slate-800 dark:text-white">Sistem Informasi Rumah Sakit</h4>
+            <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Pengembangan dan maintenance SIMRS, modul indikator mutu, sampai survei kepuasan pasien.</p>
+          </div>
+          <div class="service-card anime-hidden glass-card rounded-xl p-6 border-t-2 border-t-accent-indigo hover:-translate-y-1 transition-all duration-300">
+            <span class="font-mono text-xs text-accent-indigo">03</span>
+            <h4 class="text-lg font-bold mt-3 mb-2 text-slate-800 dark:text-white">Otomasi & Integrasi Data</h4>
+            <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">API, impor/ekspor data, dashboard analitik, dan pelaporan otomatis supaya keputusan lebih cepat.</p>
+          </div>
+          <div class="service-card anime-hidden glass-card rounded-xl p-6 border-t-2 border-t-accent-purple hover:-translate-y-1 transition-all duration-300">
+            <span class="font-mono text-xs text-accent-purple">04</span>
+            <h4 class="text-lg font-bold mt-3 mb-2 text-slate-800 dark:text-white">Jaringan & Infrastruktur</h4>
+            <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Konfigurasi MikroTik, pengelolaan 50+ workstation, troubleshooting hardware/software, dukungan 24/7.</p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Skills -->
@@ -275,7 +316,7 @@
                     <span class="w-8 h-px bg-slate-400"></span>
                     <h3 class="text-xs font-mono text-slate-500 uppercase tracking-widest">Tech_Stack</h3>
                 </div>
-                <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-slate-800 dark:text-white">Core <span class="text-accent-cyan">Competencies</span></h2>
+                <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-slate-800 dark:text-white">Keahlian <span class="text-accent-cyan">Inti</span></h2>
             </div>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -296,10 +337,10 @@
             <div class="max-w-2xl">
                 <div class="flex items-center gap-3 mb-4">
                     <span class="w-8 h-px bg-slate-400"></span>
-                    <h3 class="text-xs font-mono text-slate-500 uppercase tracking-widest">Deployments</h3>
+                    <h3 class="text-xs font-mono text-slate-500 uppercase tracking-widest">Kerja_Terdeploy</h3>
                 </div>
-                <h2 class="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-slate-800 dark:text-white">Featured <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-blue to-accent-indigo">Work</span></h2>
-                <p class="text-slate-500 dark:text-slate-400 font-light">Engineering robust solutions for complex operational requirements.</p>
+                <h2 class="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-slate-800 dark:text-white">Proyek <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-blue to-accent-indigo">Pilihan</span></h2>
+                <p class="text-slate-500 dark:text-slate-400 font-light">Beberapa sistem yang pernah saya bangun dan rawat di lingkungan nyata.</p>
             </div>
             <div class="flex space-x-2">
                 <button onclick="document.getElementById('project-container').scrollBy({left: -400, behavior: 'smooth'})" class="w-10 h-10 rounded-lg glass-card flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-accent-cyan transition-colors">
@@ -312,122 +353,48 @@
         </div>
         
         <div id="project-container" class="flex gap-6 overflow-x-auto pb-12 hide-scrollbar scroll-smooth snap-x">
-          
-          <!-- Project 1 -->
-          <div class="project-card anime-hidden min-w-[320px] md:min-w-[420px] snap-start glass-card rounded-2xl p-6 group transition-all duration-300 hover:border-accent-cyan/40">
+          {{ range .Projects }}
+          {{ $cover := .Image }}
+          {{ with .Images }}{{ with index . 0 }}{{ if .Image }}{{ $cover = .Image }}{{ end }}{{ end }}{{ end }}
+          <a href="/projects/{{ .Slug }}" class="project-card anime-hidden min-w-[320px] md:min-w-[420px] snap-start glass-card rounded-2xl p-6 group transition-all duration-300 hover:border-accent-cyan/40 block">
             <div class="relative h-56 mb-6 rounded-xl overflow-hidden bg-slate-900 border border-slate-800">
               <div class="absolute top-2 left-2 flex gap-1 z-10">
                   <div class="w-2 h-2 rounded-full bg-red-500/80"></div>
                   <div class="w-2 h-2 rounded-full bg-yellow-500/80"></div>
                   <div class="w-2 h-2 rounded-full bg-green-500/80"></div>
               </div>
-              <div class="auto-carousel flex overflow-x-auto h-full w-full snap-x snap-mandatory hide-scrollbar scroll-smooth">
-                <img src="/public/proyek1/project-gambar1.png" alt="Sistem Informasi Pegawai" class="w-full h-full object-cover flex-shrink-0 snap-start opacity-80 group-hover:opacity-100 transition-opacity">
+              {{ if $cover }}
+              <img src="{{ $cover }}" alt="{{ .Title }}" loading="lazy" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+              {{ else }}
+              <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950">
+                <span class="font-mono text-3xl font-black text-slate-700 group-hover:text-accent-cyan transition-colors">&lt;img /&gt;</span>
               </div>
+              {{ end }}
               <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/20 to-transparent opacity-80"></div>
             </div>
 
             <div class="flex justify-between items-start mb-3">
-                <h4 class="text-xl font-bold text-slate-800 dark:text-white group-hover:text-accent-cyan transition-colors">Sistem Informasi Pegawai</h4>
-                <span class="px-2 py-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-mono border border-slate-300 dark:border-slate-700">ENTERPRISE</span>
+                <h4 class="text-xl font-bold text-slate-800 dark:text-white group-hover:text-accent-cyan transition-colors">{{ .Title }}</h4>
+                <div class="flex items-center gap-1 flex-shrink-0">
+                {{ if .Category }}<span class="px-2 py-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-mono border border-slate-300 dark:border-slate-700 uppercase">{{ .Category }}</span>{{ end }}
+                {{ if .Link }}<span class="px-2 py-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-mono border border-slate-300 dark:border-slate-700">LIVE</span>{{ end }}
+                </div>
             </div>
-            <p class="text-slate-500 dark:text-slate-400 mb-6 text-sm line-clamp-2">Aplikasi web untuk manajemen data pegawai perusahaan yang komprehensif, mencakup modul absensi, payroll, dan evaluasi kinerja.</p>
-            
-            <div class="pt-4 border-t border-slate-200 dark:border-slate-800/50 flex justify-between items-center">
-              <div class="flex space-x-2 font-mono text-[10px] text-slate-400">
-                  <span>LARAVEL</span>
-                  <span>MYSQL</span>
-              </div>
-              <a href="#" class="flex items-center text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-accent-cyan transition-colors">
-                VIEW REPO <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 17L17 7m0 0H8m9 0v9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-              </a>
-            </div>
-          </div>
-          
-          <!-- Project 2 -->
-          <div class="project-card anime-hidden min-w-[320px] md:min-w-[420px] snap-start glass-card rounded-2xl p-6 group transition-all duration-300 hover:border-accent-indigo/40">
-            <div class="relative h-56 mb-6 rounded-xl overflow-hidden bg-slate-900 border border-slate-800">
-              <div class="absolute top-2 left-2 flex gap-1 z-10">
-                  <div class="w-2 h-2 rounded-full bg-red-500/80"></div>
-                  <div class="w-2 h-2 rounded-full bg-yellow-500/80"></div>
-                  <div class="w-2 h-2 rounded-full bg-green-500/80"></div>
-              </div>
-              <div class="auto-carousel flex overflow-x-auto h-full w-full snap-x snap-mandatory hide-scrollbar scroll-smooth">
-                <img src="/public/proyek2/project-gambar1.png" alt="Indikator Mutu" class="w-full h-full object-cover flex-shrink-0 snap-start opacity-80 group-hover:opacity-100 transition-opacity">
-              </div>
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/20 to-transparent opacity-80"></div>
-            </div>
+            <p class="text-slate-500 dark:text-slate-400 mb-6 text-sm line-clamp-2">{{ .Description }}</p>
 
-            <div class="flex justify-between items-start mb-3">
-                <h4 class="text-xl font-bold text-slate-800 dark:text-white group-hover:text-accent-indigo transition-colors">Indikator Mutu RS</h4>
-                <span class="px-2 py-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-mono border border-slate-300 dark:border-slate-700">HEALTHCARE</span>
-            </div>
-            <p class="text-slate-500 dark:text-slate-400 mb-6 text-sm line-clamp-2">Sistem analitik untuk penilaian dan monitoring indikator mutu di RS Bhayangkara Jambi dengan dashboard real-time.</p>
-            
             <div class="pt-4 border-t border-slate-200 dark:border-slate-800/50 flex justify-between items-center">
-              <div class="flex space-x-2 font-mono text-[10px] text-slate-400">
-                  <span>LARAVEL</span>
-                  <span>FILAMENT</span>
-              </div>
-              <a href="#" class="flex items-center text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-accent-indigo transition-colors">
-                VIEW REPO <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 17L17 7m0 0H8m9 0v9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-              </a>
+              <span class="font-mono text-[10px] text-slate-400 uppercase">{{ if .Year }}{{ .Year }} &middot; {{ end }}{{ .TechStack }}</span>
+              <span class="flex items-center text-xs font-bold text-slate-700 dark:text-slate-300 group-hover:text-accent-cyan transition-colors">
+                LIHAT DETAIL <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 17L17 7m0 0H8m9 0v9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              </span>
             </div>
+          </a>
+          {{ else }}
+          <div class="min-w-[320px] glass-card rounded-2xl p-10 text-center">
+            <p class="font-mono text-sm text-slate-500">Belum ada proyek.</p>
+            <p class="mt-3 text-sm text-slate-500">Tambahkan proyek lewat <a href="/login" class="text-accent-cyan hover:underline">panel admin</a>.</p>
           </div>
-          
-          <!-- Project 3 -->
-           <div class="project-card anime-hidden min-w-[320px] md:min-w-[420px] snap-start glass-card rounded-2xl p-6 group transition-all duration-300 hover:border-accent-purple/40">
-            <div class="relative h-56 mb-6 rounded-xl overflow-hidden bg-slate-900 border border-slate-800">
-              <div class="absolute top-2 left-2 flex gap-1 z-10">
-                  <div class="w-2 h-2 rounded-full bg-red-500/80"></div>
-                  <div class="w-2 h-2 rounded-full bg-yellow-500/80"></div>
-                  <div class="w-2 h-2 rounded-full bg-green-500/80"></div>
-              </div>
-              <div class="auto-carousel flex overflow-x-auto h-full w-full snap-x snap-mandatory hide-scrollbar scroll-smooth">
-                <img src="/public/proyek3/project-gambar1.png" alt="Survey Kepuasan" class="w-full h-full object-cover flex-shrink-0 snap-start opacity-80 group-hover:opacity-100 transition-opacity">
-              </div>
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/20 to-transparent opacity-80"></div>
-            </div>
-
-            <div class="flex justify-between items-start mb-3">
-                <h4 class="text-xl font-bold text-slate-800 dark:text-white group-hover:text-accent-purple transition-colors">Survey Kepuasan Pasien</h4>
-                <span class="px-2 py-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-mono border border-slate-300 dark:border-slate-700">CRM</span>
-            </div>
-            <p class="text-slate-500 dark:text-slate-400 mb-6 text-sm line-clamp-2">Aplikasi interaktif untuk pengumpulan data survei kepuasan pasien secara efisien dengan pelaporan otomatis.</p>
-            
-            <div class="pt-4 border-t border-slate-200 dark:border-slate-800/50 flex justify-between items-center">
-              <div class="flex space-x-2 font-mono text-[10px] text-slate-400">
-                  <span>LARAVEL</span>
-                  <span>MYSQL</span>
-              </div>
-              <a href="#" class="flex items-center text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-accent-purple transition-colors">
-                VIEW REPO <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 17L17 7m0 0H8m9 0v9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-              </a>
-            </div>
-          </div>
-          
-          <!-- Project 4 -->
-           <div class="project-card anime-hidden min-w-[320px] md:min-w-[420px] snap-start glass-card rounded-2xl p-6 group transition-all duration-300 hover:border-accent-cyan/40">
-            <div class="relative h-56 mb-6 rounded-xl overflow-hidden bg-slate-900 border border-slate-800">
-               <div class="absolute top-2 left-2 flex gap-1 z-10">
-                  <div class="w-2 h-2 rounded-full bg-red-500/80"></div>
-                  <div class="w-2 h-2 rounded-full bg-yellow-500/80"></div>
-                  <div class="w-2 h-2 rounded-full bg-green-500/80"></div>
-              </div>
-              <img src="/public/proyek4/project-gambar1.png" alt="Storage App" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/20 to-transparent opacity-80"></div>
-            </div>
-            <div class="flex justify-between items-start mb-3">
-                <h4 class="text-xl font-bold text-slate-800 dark:text-white group-hover:text-accent-cyan transition-colors">Aplikasi Storage Data</h4>
-                <span class="px-2 py-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-mono border border-slate-300 dark:border-slate-700">UTILITY</span>
-            </div>
-            <p class="text-slate-500 dark:text-slate-400 mb-6 text-sm line-clamp-2">Sistem manajemen penyimpanan dokumen digital terpusat yang aman.</p>
-            <div class="pt-4 border-t border-slate-200 dark:border-slate-800/50 flex justify-between items-center">
-               <span class="font-mono text-[10px] text-slate-400">LARAVEL</span>
-               <a href="#" class="flex items-center text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-accent-cyan transition-colors">DETAIL</a>
-            </div>
-          </div>
-
+          {{ end }}
         </div>
       </div>
     </section>
@@ -438,97 +405,182 @@
             <div class="mb-16 exp-header anime-hidden">
                 <div class="flex items-center gap-3 mb-4">
                     <span class="w-8 h-px bg-slate-400"></span>
-                    <h3 class="text-xs font-mono text-slate-500 uppercase tracking-widest">Career_Log</h3>
+                    <h3 class="text-xs font-mono text-slate-500 uppercase tracking-widest">Riwayat_Kerja</h3>
                 </div>
-                <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-slate-800 dark:text-white">Professional <span class="text-accent-cyan">Experience</span></h2>
+                <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-slate-800 dark:text-white">Pengalaman <span class="text-accent-cyan">Profesional</span></h2>
             </div>
-            
+
+            {{ if .Experience }}
             <div class="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-px before:bg-slate-300 dark:before:bg-slate-700">
-                
-                <!-- Item 1 -->
+                {{ range $i, $e := .Experience }}
                 <div class="exp-item anime-hidden relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
                     <div class="flex items-center justify-center w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 group-hover:border-accent-cyan group-hover:shadow-[0_0_10px_rgba(6,182,212,0.5)] transition-all duration-300 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                        {{ if eq $i 0 }}
                         <div class="w-3 h-3 bg-accent-cyan rounded-full animate-pulse"></div>
+                        {{ else }}
+                        <div class="w-2 h-2 bg-slate-500 rounded-full"></div>
+                        {{ end }}
                     </div>
                     <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-6 rounded-xl glass-card hover:border-accent-cyan/30 transition-all duration-300 text-left">
                         <div class="flex flex-col mb-3">
-                            <span class="text-[10px] font-mono text-accent-cyan mb-1">RS BHAYANGKARA JAMBI | JUNI 2025 - SEKARANG</span>
-                            <h4 class="text-lg font-bold text-slate-900 dark:text-white">IT Programmer</h4>
+                            <span class="text-[10px] font-mono text-accent-cyan mb-1 uppercase">{{ $e.Company }} &nbsp;|&nbsp; {{ $e.Period }}</span>
+                            <h4 class="text-lg font-bold text-slate-900 dark:text-white">{{ $e.Role }}</h4>
                         </div>
-                        <ul class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed font-light list-disc pl-4 space-y-2">
-                            <li>Membangun dan mengembangkan aplikasi internal rumah sakit menggunakan Laravel, Python, dan Flutter.</li>
-                            <li>Maintenance SIMRS dan memastikan kelancaran operasional 24/7.</li>
-                            <li>Menjaga konektivitas jaringan (MikroTik) untuk 50 workstation dan troubleshooting Hardware/Software.</li>
-                        </ul>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed font-light whitespace-pre-line">{{ $e.Bullets }}</p>
                     </div>
                 </div>
-                
-                <!-- Item 2 -->
-                <div class="exp-item anime-hidden relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                    <div class="flex items-center justify-center w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 group-hover:border-accent-indigo transition-all duration-300 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
-                        <div class="w-2 h-2 bg-slate-500 rounded-full"></div>
-                    </div>
-                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-6 rounded-xl glass-card hover:border-accent-indigo/30 transition-all duration-300 text-left">
-                        <div class="flex flex-col mb-3">
-                            <span class="text-[10px] font-mono text-accent-indigo mb-1">PT. THRIVENI | AGUSTUS 2022 - JUNI 2023</span>
-                            <h4 class="text-lg font-bold text-slate-900 dark:text-white">Subcontractor Administrator</h4>
-                        </div>
-                        <ul class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed font-light list-disc pl-4 space-y-2">
-                            <li>Mengelola kontrak sewa 50+ unit alat berat, LMV, Bus, dan Tongkang.</li>
-                            <li>Validasi dan audit timesheet dari site mining secara berkala untuk compliance.</li>
-                            <li>Memproses invoice (Tally) dan monitor evaluasi efisiensi biaya operasional (15%).</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Item 3 -->
-                <div class="exp-item anime-hidden relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                    <div class="flex items-center justify-center w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 group-hover:border-accent-purple transition-all duration-300 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
-                        <div class="w-2 h-2 bg-slate-500 rounded-full"></div>
-                    </div>
-                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-6 rounded-xl glass-card hover:border-accent-purple/30 transition-all duration-300 text-left">
-                        <div class="flex flex-col mb-3">
-                            <span class="text-[10px] font-mono text-accent-purple mb-1">PROGRAM KOTAKU PUPR | MEI 2020 - MEI 2022</span>
-                            <h4 class="text-lg font-bold text-slate-900 dark:text-white">Asisten Manajemen Data</h4>
-                        </div>
-                        <ul class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed font-light list-disc pl-4 space-y-2">
-                            <li>Memimpin survey baseline data 5.000 bangunan hunian di lebih dari 25 kelurahan.</li>
-                            <li>Implementasi Geographic Information System (GIS) dan pemutakhiran data 95%.</li>
-                            <li>Analisis kelengkapan, akurasi, anomali data, serta pembuatan laporan berkala.</li>
-                        </ul>
-                    </div>
-                </div>
+                {{ end }}
             </div>
+            {{ else }}
+            <div class="glass-card rounded-xl p-8 text-center text-sm text-slate-500">
+                Data pengalaman kerja belum diisi. Tambahkan lewat <a href="/login" class="text-accent-cyan hover:underline">panel admin</a>.
+            </div>
+            {{ end }}
         </div>
     </section>
+
+<!-- Education & Certifications -->
+    {{ if .Credentials }}
+    <section class="py-32 relative" id="education">
+      <div class="max-w-6xl mx-auto px-4 scroll-section">
+        <div class="mb-16 cred-header anime-hidden">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-px bg-slate-400"></span>
+            <h3 class="text-xs font-mono text-slate-500 uppercase tracking-widest">Pendidikan_Sertifikasi</h3>
+          </div>
+          <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-slate-800 dark:text-white">Riwayat Pendidikan <span class="text-accent-cyan">&amp; Sertifikasi</span></h2>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {{ range .Credentials }}
+          <div class="cred-card anime-hidden glass-card rounded-xl p-6 border-t-2 border-t-accent-indigo hover:-translate-y-1 transition-all duration-300">
+            <span class="font-mono text-[10px] uppercase tracking-widest text-accent-cyan">{{ if eq .Type "certification" }}Sertifikasi{{ else }}Pendidikan{{ end }}{{ if .Year }} &middot; {{ .Year }}{{ end }}</span>
+            <h4 class="text-lg font-bold mt-3 text-slate-800 dark:text-white">{{ .Title }}</h4>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ .Institution }}</p>
+          </div>
+          {{ end }}
+        </div>
+      </div>
+    </section>
+    {{ end }}
+
+    <!-- Testimonials -->
+    {{ if .Testimonials }}
+    <section class="py-32 relative bg-slate-900/5 dark:bg-slate-900/20 border-y border-slate-200 dark:border-slate-800" id="testimonials">
+      <div class="max-w-6xl mx-auto px-4 scroll-section">
+        <div class="mb-16 testi-header anime-hidden">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-px bg-slate-400"></span>
+            <h3 class="text-xs font-mono text-slate-500 uppercase tracking-widest">Testimoni</h3>
+          </div>
+          <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-slate-800 dark:text-white">Kata <span class="text-accent-cyan">Mereka</span></h2>
+        </div>
+        <div class="grid md:grid-cols-3 gap-6">
+          {{ range .Testimonials }}
+          <figure class="testi-card anime-hidden glass-card rounded-xl p-6 flex flex-col">
+            <svg class="w-6 h-6 text-accent-cyan mb-4 opacity-70" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+            <blockquote class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed flex-1">&ldquo;{{ .Quote }}&rdquo;</blockquote>
+            <figcaption class="mt-5 pt-4 border-t border-slate-200 dark:border-slate-800">
+              <p class="font-bold text-sm text-slate-800 dark:text-white">{{ .Name }}</p>
+              <p class="text-xs text-slate-500 mt-0.5">{{ .Role }}</p>
+            </figcaption>
+          </figure>
+          {{ end }}
+        </div>
+      </div>
+    </section>
+    {{ end }}
+
+    <!-- Latest Posts -->
+    {{ if .LatestPosts }}
+    <section class="py-32 relative" id="blog">
+      <div class="max-w-6xl mx-auto px-4 scroll-section">
+        <div class="flex items-end justify-between mb-16 gap-4 blog-header anime-hidden">
+          <div>
+            <div class="flex items-center gap-3 mb-4">
+              <span class="w-8 h-px bg-slate-400"></span>
+              <h3 class="text-xs font-mono text-slate-500 uppercase tracking-widest">Tulisan</h3>
+            </div>
+            <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-slate-800 dark:text-white">Catatan &amp; <span class="text-accent-cyan">Artikel</span></h2>
+          </div>
+          <a href="/blog" class="text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-accent-cyan transition-colors whitespace-nowrap">Semua Tulisan &rarr;</a>
+        </div>
+        <div class="grid md:grid-cols-3 gap-6">
+          {{ range .LatestPosts }}
+          <a href="/blog/{{ .Slug }}" class="post-card anime-hidden glass-card rounded-xl p-6 group hover:border-accent-cyan/40 transition-all duration-300 block">
+            <span class="font-mono text-[10px] uppercase tracking-widest text-accent-cyan">{{ .Category }} &middot; {{ .CreatedAt.Format "02 Jan 2006" }}</span>
+            <h4 class="text-lg font-bold mt-3 text-slate-800 dark:text-white group-hover:text-accent-cyan transition-colors">{{ .Title }}</h4>
+          </a>
+          {{ end }}
+        </div>
+      </div>
+    </section>
+    {{ end }}
 
     <!-- Contact -->
     <section class="py-32 relative" id="contact">
       <div class="max-w-4xl mx-auto px-4 scroll-section">
         <div class="glass-card rounded-2xl p-10 md:p-16 text-center border-t border-t-accent-cyan/50 relative overflow-hidden contact-box anime-hidden">
-            <!-- Glow effect inside box -->
             <div class="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-accent-cyan/20 blur-3xl rounded-full"></div>
-            
-            <h3 class="text-xs font-mono text-accent-cyan uppercase tracking-widest mb-4">./contact_request.sh</h3>
-            <h2 class="text-4xl md:text-5xl font-bold mb-8 tracking-tight text-slate-800 dark:text-white">Initialize <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-cyan to-accent-blue">Connection</span></h2>
-            
-            <p class="text-slate-500 dark:text-slate-400 mb-10 max-w-lg mx-auto font-light">
-                Currently open for new opportunities. Whether you have a question or just want to say hi, I'll try my best to get back to you!
+
+            <h3 class="text-xs font-mono text-accent-cyan uppercase tracking-widest mb-4 relative">./kirim_pesan.sh</h3>
+            <h2 class="text-4xl md:text-5xl font-bold mb-8 tracking-tight text-slate-800 dark:text-white relative">Mari <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-cyan to-accent-blue">Terhubung</span></h2>
+
+            <p class="text-slate-500 dark:text-slate-400 mb-8 max-w-lg mx-auto font-light relative">
+                Terbuka untuk proyek, kolaborasi, maupun peluang kerja. Punya pertanyaan atau sekadar ingin menyapa? Kirim pesan, saya usahakan membalas secepatnya.
             </p>
-            
-            <div class="flex flex-wrap justify-center gap-4">
-              <a href="mailto:{{ .Settings.EmailLink }}" class="group flex items-center space-x-3 px-6 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 hover:border-accent-cyan hover:shadow-[0_0_15px_rgba(6,182,212,0.2)] transition-all duration-300">
+
+            {{ if eq .ContactStatus "terkirim" }}
+            <div class="mb-8 p-4 rounded-lg border border-green-500/40 bg-green-500/10 text-sm font-medium text-green-600 dark:text-green-400 relative">
+                Pesan kamu sudah terkirim. Terima kasih — saya akan membalas secepatnya.
+            </div>
+            {{ else if eq .ContactStatus "terbatas" }}
+            <div class="mb-8 p-4 rounded-lg border border-amber-500/40 bg-amber-500/10 text-sm font-medium text-amber-600 dark:text-amber-400 relative">
+                Terlalu sering mengirim pesan. Mohon tunggu beberapa menit lalu coba lagi.
+            </div>
+            {{ else if eq .ContactStatus "error" }}
+            <div class="mb-8 p-4 rounded-lg border border-red-500/40 bg-red-500/10 text-sm font-medium text-red-600 dark:text-red-400 relative">
+                Pesan gagal dikirim. Lengkapi nama dan pesan, lalu coba lagi.
+            </div>
+            {{ end }}
+
+            <form method="POST" action="/contact" class="max-w-lg mx-auto text-left space-y-4 relative">
+              <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="hidden">
+              <div class="grid sm:grid-cols-2 gap-4">
+                <input required type="text" name="name" maxlength="100" placeholder="Nama Anda *" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-4 py-3 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:border-accent-cyan transition-colors">
+                <input type="email" name="email" maxlength="200" placeholder="Email (opsional)" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-4 py-3 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:border-accent-cyan transition-colors">
+              </div>
+              <textarea required name="message" rows="4" maxlength="5000" placeholder="Tulis pesan Anda..." class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-4 py-3 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:border-accent-cyan transition-colors resize-y"></textarea>
+              <button type="submit" class="w-full px-8 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg font-semibold transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] active:scale-95">
+                Kirim Pesan
+              </button>
+            </form>
+
+            <p class="mt-10 mb-4 text-xs font-mono uppercase tracking-widest text-slate-400 relative">atau hubungi langsung</p>
+            <div class="flex flex-wrap justify-center gap-4 relative">
+              <a href="{{ .Settings.EmailLink }}" class="group flex items-center space-x-3 px-6 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 hover:border-accent-cyan hover:shadow-[0_0_15px_rgba(6,182,212,0.2)] transition-all duration-300">
                   <svg class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-accent-cyan transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                  <span class="font-mono text-sm text-slate-800 dark:text-slate-200">Email_Me</span>
+                  <span class="font-mono text-sm text-slate-800 dark:text-slate-200">Email_Saya</span>
               </a>
-              <a href="{{ .Settings.GithubLink }}" target="_blank" class="group flex items-center space-x-3 px-6 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 hover:border-accent-cyan hover:shadow-[0_0_15px_rgba(6,182,212,0.2)] transition-all duration-300">
+              {{ if .Settings.WhatsAppLink }}
+              <a href="{{ .Settings.WhatsAppLink }}" target="_blank" rel="noopener noreferrer" class="group flex items-center space-x-3 px-6 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 hover:border-accent-cyan hover:shadow-[0_0_15px_rgba(6,182,212,0.2)] transition-all duration-300">
+                  <svg class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-green-500 transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.767.967-.94 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                  <span class="font-mono text-sm text-slate-800 dark:text-slate-200">WhatsApp</span>
+              </a>
+              {{ end }}
+              <a href="{{ .Settings.GithubLink }}" target="_blank" rel="noopener noreferrer" class="group flex items-center space-x-3 px-6 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 hover:border-accent-cyan hover:shadow-[0_0_15px_rgba(6,182,212,0.2)] transition-all duration-300">
                   <svg class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
                   <span class="font-mono text-sm text-slate-800 dark:text-slate-200">GitHub</span>
               </a>
-              <a href="{{ .Settings.LinkedInLink }}" target="_blank" class="group flex items-center space-x-3 px-6 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 hover:border-accent-cyan hover:shadow-[0_0_15px_rgba(6,182,212,0.2)] transition-all duration-300">
+              <a href="{{ .Settings.LinkedInLink }}" target="_blank" rel="noopener noreferrer" class="group flex items-center space-x-3 px-6 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 hover:border-accent-cyan hover:shadow-[0_0_15px_rgba(6,182,212,0.2)] transition-all duration-300">
                   <svg class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-accent-blue transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
                   <span class="font-mono text-sm text-slate-800 dark:text-slate-200">LinkedIn</span>
               </a>
+              {{ if .Settings.CVLink }}
+              <a href="{{ .Settings.CVLink }}" target="_blank" rel="noopener noreferrer" class="group flex items-center space-x-3 px-6 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 hover:border-accent-cyan hover:shadow-[0_0_15px_rgba(6,182,212,0.2)] transition-all duration-300">
+                  <svg class="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-accent-cyan transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  <span class="font-mono text-sm text-slate-800 dark:text-slate-200">Unduh_CV</span>
+              </a>
+              {{ end }}
             </div>
         </div>
       </div>
@@ -540,7 +592,7 @@
                 {{ .Settings.FooterText }}
             </p>
             <div class="flex space-x-6">
-                <span class="text-xs font-mono text-accent-cyan">STATUS: ALL SYSTEMS NOMINAL</span>
+                <span class="text-xs font-mono text-accent-cyan">STATUS: SEMUA SISTEM NORMAL</span>
             </div>
         </div>
     </footer>
@@ -589,11 +641,6 @@
                 closeIcon.classList.add('hidden');
             });
         });
-
-        const footerYear = document.getElementById('footer-year');
-        if (footerYear) {
-            footerYear.textContent = new Date().getFullYear();
-        }
 
         // --- Anime.js Animations ---
         document.addEventListener("DOMContentLoaded", () => {
@@ -736,6 +783,24 @@
                                 easing: 'easeOutBack',
                                 begin: () => document.querySelector('.contact-box').classList.remove('anime-hidden')
                             });
+                        }
+
+                        // Section baru (layanan, pendidikan, testimoni, blog):
+                        // tampilkan seluruh elemennya tanpa animasi khusus
+                        const knownIds = ['about', 'skills', 'projects', 'experience', 'contact'];
+                        if (!knownIds.includes(target.id)) {
+                            const items = target.querySelectorAll('.anime-hidden');
+                            if (items.length) {
+                                anime({
+                                    targets: items,
+                                    opacity: [0, 1],
+                                    translateY: [20, 0],
+                                    delay: anime.stagger(80),
+                                    duration: 700,
+                                    easing: 'easeOutQuad',
+                                    begin: () => items.forEach(el => el.classList.remove('anime-hidden'))
+                                });
+                            }
                         }
 
                         observer.unobserve(target); // Only animate once

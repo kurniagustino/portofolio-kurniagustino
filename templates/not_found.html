@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>404 — Halaman Tidak Ditemukan</title>
+    <meta name="robots" content="noindex">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>document.documentElement.classList.add('js');</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+      :root { --glass-bg: rgba(255,255,255,0.6); --glass-border: rgba(226,232,240,0.6); }
+      .dark { --glass-bg: rgba(15,23,42,0.4); --glass-border: rgba(51,65,85,0.3); }
+      body {
+        font-family: 'Inter', sans-serif;
+        background: #f8fafc;
+        color: #0f172a;
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 1.5rem;
+      }
+      @media (prefers-color-scheme: dark) {
+        body { background: #020617; color: #f1f5f9; }
+        .glass { background: rgba(15,23,42,0.4); border-color: rgba(51,65,85,0.3); }
+        .muted { color: #94a3b8; }
+      }
+      .glass {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(16px);
+        border-radius: 16px;
+        padding: 3rem 2.5rem;
+        max-width: 32rem;
+        width: 100%;
+      }
+      .code { font-family: 'Fira Code', monospace; color: #06b6d4; font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase; }
+      h1 { font-size: 2.25rem; font-weight: 900; letter-spacing: -0.02em; margin: 0.75rem 0 0.5rem; }
+      .muted { color: #64748b; font-weight: 300; line-height: 1.6; margin: 0 0 1.75rem; }
+      .path { font-family: 'Fira Code', monospace; font-size: 0.8rem; color: #94a3b8; word-break: break-all; margin-bottom: 1.75rem; }
+      .actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+      a.btn {
+        display: inline-block;
+        padding: 0.75rem 1.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.25s ease;
+      }
+      a.primary { background: #0f172a; color: #fff; }
+      a.primary:hover { box-shadow: 0 0 20px rgba(6,182,212,0.4); }
+      a.ghost { border: 1px solid rgba(100,116,139,0.35); color: inherit; }
+      a.ghost:hover { border-color: #06b6d4; color: #06b6d4; }
+      @media (prefers-color-scheme: dark) { a.primary { background: #fff; color: #0f172a; } }
+    </style>
+  </head>
+  <body>
+    <div class="glass">
+      <p class="code">ERROR_404</p>
+      <h1>Halaman Tidak Ditemukan</h1>
+      <p class="muted">Halaman yang kamu cari sudah dipindahkan, dihapus, atau memang tidak pernah ada.</p>
+      {{ if .Path }}<p class="path">{{ .Path }}</p>{{ end }}
+      <div class="actions">
+        <a href="/" class="btn primary">Kembali ke Beranda</a>
+        <a href="/blog" class="btn ghost">Lihat Tulisan</a>
+      </div>
+    </div>
+  </body>
+</html>

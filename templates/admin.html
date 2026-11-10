@@ -71,7 +71,8 @@
         /* Tabs */
         .tabs {
             display: flex;
-            gap: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem 1rem;
             margin-bottom: 2rem;
             border-bottom: 1px solid var(--border);
             padding-bottom: 1rem;
@@ -208,8 +209,13 @@
         
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('projects', this)">Projects</button>
+            <button class="tab-btn" onclick="switchTab('messages', this)">Pesan</button>
+            <button class="tab-btn" onclick="switchTab('experiences', this)">Pengalaman</button>
+            <button class="tab-btn" onclick="switchTab('credentials', this)">Pendidikan</button>
+            <button class="tab-btn" onclick="switchTab('testimonials', this)">Testimoni</button>
+            <button class="tab-btn" onclick="switchTab('posts', this)">Blog</button>
             <button class="tab-btn" onclick="switchTab('settings', this)">Site Settings</button>
-            <button class="tab-btn" onclick="switchTab('menus', this)">Navigation Menus</button>
+            <button class="tab-btn" onclick="switchTab('menus', this)">Navigation</button>
         </div>
 
         <!-- PROJECTS TAB -->
@@ -236,6 +242,71 @@
             </div>
         </div>
 
+        <!-- MESSAGES TAB -->
+        <div id="messages" class="tab-content">
+            <div class="header-actions">
+                <h2>Pesan Masuk</h2>
+                <button class="btn btn-outline" onclick="fetchMessages()">Muat Ulang</button>
+            </div>
+            <div id="messageList" class="card">Loading...</div>
+        </div>
+
+        <!-- EXPERIENCES TAB -->
+        <div id="experiences" class="tab-content">
+            <div class="header-actions">
+                <h2>Pengalaman Kerja</h2>
+                <button class="btn" onclick="openCollectionModal('experiences')">+ Tambah</button>
+            </div>
+            <div class="card" style="padding: 0;">
+                <table>
+                    <thead><tr id="experiencesHead"></tr></thead>
+                    <tbody id="experiencesBody"><tr><td colspan="99" style="text-align:center;">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- CREDENTIALS TAB -->
+        <div id="credentials" class="tab-content">
+            <div class="header-actions">
+                <h2>Pendidikan &amp; Sertifikasi</h2>
+                <button class="btn" onclick="openCollectionModal('credentials')">+ Tambah</button>
+            </div>
+            <div class="card" style="padding: 0;">
+                <table>
+                    <thead><tr id="credentialsHead"></tr></thead>
+                    <tbody id="credentialsBody"><tr><td colspan="99" style="text-align:center;">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TESTIMONIALS TAB -->
+        <div id="testimonials" class="tab-content">
+            <div class="header-actions">
+                <h2>Testimoni</h2>
+                <button class="btn" onclick="openCollectionModal('testimonials')">+ Tambah</button>
+            </div>
+            <div class="card" style="padding: 0;">
+                <table>
+                    <thead><tr id="testimonialsHead"></tr></thead>
+                    <tbody id="testimonialsBody"><tr><td colspan="99" style="text-align:center;">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- POSTS TAB -->
+        <div id="posts" class="tab-content">
+            <div class="header-actions">
+                <h2>Blog / Tulisan</h2>
+                <button class="btn" onclick="openCollectionModal('posts')">+ Tulisan Baru</button>
+            </div>
+            <div class="card" style="padding: 0;">
+                <table>
+                    <thead><tr id="postsHead"></tr></thead>
+                    <tbody id="postsBody"><tr><td colspan="99" style="text-align:center;">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- SETTINGS TAB -->
         <div id="settings" class="tab-content">
             <div class="header-actions">
@@ -254,6 +325,10 @@
                             <div class="form-group">
                                 <label>Favicon URL (Image Link)</label>
                                 <input type="text" name="Favicon" id="Favicon" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Foto Profil (URL gambar, kosongkan untuk placeholder)</label>
+                                <input type="text" name="ProfileImage" id="ProfileImage" class="form-control" placeholder="https://... atau /public/foto-anda.jpg">
                             </div>
                             
                             <h3 style="margin-top: 2rem;">Hero Section</h3>
@@ -284,6 +359,14 @@
                             <div class="form-group">
                                 <label>Contact Email (e.g., mailto:you@email.com)</label>
                                 <input type="text" name="EmailLink" id="EmailLink" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>WhatsApp (https://wa.me/628xxxx)</label>
+                                <input type="text" name="WhatsAppLink" id="WhatsAppLink" class="form-control" placeholder="https://wa.me/6281234567890">
+                            </div>
+                            <div class="form-group">
+                                <label>CV / Resume PDF (URL, kosongkan bila belum ada)</label>
+                                <input type="text" name="CVLink" id="CVLink" class="form-control" placeholder="/public/cv.pdf">
                             </div>
 
                             <h3 style="margin-top: 2rem;">Footer</h3>
@@ -356,6 +439,7 @@
         <div class="modal">
             <h2 id="modalTitle">Add Project</h2>
             <form id="projectForm">
+                <input type="hidden" name="id" id="projectId">
                 <div class="form-group">
                     <label>Title</label>
                     <input type="text" name="title" class="form-control" required>
@@ -366,20 +450,63 @@
                 </div>
                 <div class="form-group">
                     <label>Tech Stack</label>
-                    <input type="text" name="techstack" class="form-control">
+                    <input type="text" name="techstack" class="form-control" placeholder="Laravel, MySQL">
                 </div>
                 <div class="form-group">
-                    <label>Link (URL)</label>
+                    <label>Tahun (mis. 2025)</label>
+                    <input type="text" name="year" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Kategori (mis. Healthcare)</label>
+                    <input type="text" name="category" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Peran (mis. Backend Developer)</label>
+                    <input type="text" name="role" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Masalah (studi kasus)</label>
+                    <textarea name="problem" class="form-control"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Solusi (studi kasus)</label>
+                    <textarea name="solution" class="form-control"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Hasil / Dampak (studi kasus)</label>
+                    <textarea name="result" class="form-control"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Link (URL live demo / repo)</label>
                     <input type="text" name="link" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Urutan tampil</label>
+                    <input type="number" name="order" class="form-control" value="0">
                 </div>
                 <div class="form-group">
                     <label>Images</label>
                     <input type="file" name="images" class="form-control" multiple>
+                    <div id="projectImages" style="margin-top: 0.75rem;"></div>
                 </div>
                 
                 <div class="modal-actions">
                     <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
                     <button type="submit" class="btn">Save Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Form for Collections (Pengalaman / Pendidikan / Testimoni / Blog) -->
+    <div class="modal-overlay" id="collectionModalOverlay">
+        <div class="modal">
+            <h2 id="collectionModalTitle">Tambah</h2>
+            <form id="collectionForm">
+                <div id="collectionFormFields"></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeCollectionModal()">Batal</button>
+                    <button type="submit" class="btn">Simpan</button>
                 </div>
             </form>
         </div>
@@ -400,6 +527,7 @@
                 const res = await fetch('/admin/api/projects');
                 if (res.status === 401) { window.location.href = '/login'; return; }
                 const data = await res.json();
+                window._projects = data || [];
                 const tbody = document.getElementById('projectTableBody');
                 tbody.innerHTML = '';
                 if (!data || data.length === 0) {
@@ -411,8 +539,11 @@
                     tr.innerHTML = `
                         <td>${p.ID}</td>
                         <td><strong>${p.Title}</strong></td>
-                        <td>${p.TechStack}</td>
-                        <td><button class="btn btn-danger" onclick="deleteProject(${p.ID})">Delete</button></td>
+                        <td>${p.TechStack || ''}</td>
+                        <td>
+                            <button class="btn btn-outline" onclick="openModal(${p.ID})">Edit</button>
+                            <button class="btn btn-danger" onclick="deleteProject(${p.ID})">Delete</button>
+                        </td>
                     `;
                     tbody.appendChild(tr);
                 });
@@ -429,16 +560,59 @@
 
         const modal = document.getElementById('modalOverlay');
         const pform = document.getElementById('projectForm');
-        function openModal() { modal.classList.add('active'); }
-        function closeModal() { modal.classList.remove('active'); pform.reset(); }
+        const projectIdInput = document.getElementById('projectId');
+
+        function openModal(id) {
+            pform.reset();
+            projectIdInput.value = '';
+            document.getElementById('projectImages').innerHTML = '';
+            document.getElementById('modalTitle').textContent = 'Add Project';
+
+            if (id) {
+                const p = (window._projects || []).find(x => x.ID === id);
+                if (!p) return;
+                projectIdInput.value = p.ID;
+                document.getElementById('modalTitle').textContent = 'Edit Project';
+                pform.title.value = p.Title || '';
+                pform.description.value = p.Description || '';
+                pform.techstack.value = p.TechStack || '';
+                pform.year.value = p.Year || '';
+                pform.category.value = p.Category || '';
+                pform.role.value = p.Role || '';
+                pform.problem.value = p.Problem || '';
+                pform.solution.value = p.Solution || '';
+                pform.result.value = p.Result || '';
+                pform.link.value = p.Link || '';
+                pform.order.value = p.Order || 0;
+
+                const imgs = p.Images || [];
+                document.getElementById('projectImages').innerHTML = imgs.map(img =>
+                    `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:0.8rem;">
+                        <img src="${img.Image}" style="width:48px;height:32px;object-fit:cover;border-radius:4px;">
+                        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#94a3b8;">${img.Image}</span>
+                        <button type="button" class="btn btn-danger" style="padding:4px 8px;font-size:0.75rem;" onclick="deleteProjectImage(${img.ID})">Hapus</button>
+                    </div>`
+                ).join('') || '<span style="font-size:0.8rem;color:#94a3b8;">Belum ada gambar.</span>';
+            }
+            modal.classList.add('active');
+        }
+
+        function closeModal() { modal.classList.remove('active'); pform.reset(); projectIdInput.value = ''; }
+
+        async function deleteProjectImage(id) {
+            if (!confirm('Hapus gambar ini?')) return;
+            const res = await fetch(`/admin/api/projects/image/${id}`, { method: 'DELETE' });
+            if (res.ok) { const editId = parseInt(projectIdInput.value, 10); if (editId) openModal(editId); }
+        }
 
         pform.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
+            const id = projectIdInput.value;
             btn.textContent = 'Saving...'; btn.disabled = true;
             try {
-                const res = await fetch('/admin/api/projects', {
-                    method: 'POST',
+                const res = await fetch(id ? `/admin/api/projects/${id}` : '/admin/api/projects', {
+                    method: id ? 'PUT' : 'POST',
                     body: new FormData(pform)
                 });
                 if (res.ok) { closeModal(); fetchProjects(); }
@@ -454,6 +628,7 @@
                     const data = await res.json();
                     document.getElementById('SiteTitle').value = data.SiteTitle || '';
                     document.getElementById('Favicon').value = data.Favicon || '';
+                    document.getElementById('ProfileImage').value = data.ProfileImage || '';
                     document.getElementById('HeroTitle').value = data.HeroTitle || '';
                     document.getElementById('HeroSubtitle').value = data.HeroSubtitle || '';
                     document.getElementById('AboutText').value = data.AboutText || '';
@@ -461,6 +636,8 @@
                     document.getElementById('GithubLink').value = data.GithubLink || '';
                     document.getElementById('LinkedInLink').value = data.LinkedInLink || '';
                     document.getElementById('EmailLink').value = data.EmailLink || '';
+                    document.getElementById('WhatsAppLink').value = data.WhatsAppLink || '';
+                    document.getElementById('CVLink').value = data.CVLink || '';
                 }
             } catch (err) { console.error(err); }
         }
@@ -556,6 +733,215 @@
         
         // Init Menus
         fetchMenus();
+
+        // --- KOLEKSI UMUM (Pengalaman / Pendidikan / Testimoni / Blog) ---
+        const collections = {
+            experiences: {
+                endpoint: '/admin/api/experiences',
+                title: 'Pengalaman Kerja',
+                fields: [
+                    { name: 'Company', label: 'Perusahaan', required: true, col: true },
+                    { name: 'Role', label: 'Jabatan', required: true, col: true },
+                    { name: 'Period', label: 'Periode', placeholder: 'Juni 2025 - Sekarang', col: true },
+                    { name: 'Bullets', label: 'Poin kerja (satu baris = satu poin)', type: 'textarea' },
+                    { name: 'Order', label: 'Urutan', type: 'number' }
+                ]
+            },
+            credentials: {
+                endpoint: '/admin/api/credentials',
+                title: 'Pendidikan / Sertifikasi',
+                fields: [
+                    { name: 'Type', label: 'Jenis', type: 'select', options: [['education', 'Pendidikan'], ['certification', 'Sertifikasi']], col: true },
+                    { name: 'Title', label: 'Nama', required: true, col: true },
+                    { name: 'Institution', label: 'Institusi', col: true },
+                    { name: 'Year', label: 'Tahun' },
+                    { name: 'Order', label: 'Urutan', type: 'number' }
+                ]
+            },
+            testimonials: {
+                endpoint: '/admin/api/testimonials',
+                title: 'Testimoni',
+                fields: [
+                    { name: 'Quote', label: 'Kutipan', type: 'textarea', required: true, col: true },
+                    { name: 'Name', label: 'Nama', required: true, col: true },
+                    { name: 'Role', label: 'Jabatan / Hubungan', col: true },
+                    { name: 'Order', label: 'Urutan', type: 'number' }
+                ]
+            },
+            posts: {
+                endpoint: '/admin/api/posts',
+                title: 'Tulisan',
+                fields: [
+                    { name: 'Title', label: 'Judul', required: true, col: true },
+                    { name: 'Category', label: 'Kategori', col: true },
+                    { name: 'Slug', label: 'Slug (kosongkan untuk otomatis)' },
+                    { name: 'Image', label: 'Gambar (URL)' },
+                    { name: 'Content', label: 'Isi (HTML)', type: 'textarea' }
+                ]
+            }
+        };
+
+        function escapeHtml(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+                { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+            ));
+        }
+
+        async function fetchCollection(key) {
+            const cfg = collections[key];
+            try {
+                const res = await fetch(cfg.endpoint);
+                if (res.status === 401) { window.location.href = '/login'; return; }
+                const data = await res.json();
+                const cols = cfg.fields.filter(f => f.col);
+                document.getElementById(key + 'Head').innerHTML =
+                    cols.map(f => `<th>${f.label}</th>`).join('') + '<th>Aksi</th>';
+                const tbody = document.getElementById(key + 'Body');
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="${cols.length + 1}" style="text-align:center;">Belum ada data — klik “+ Tambah”.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = data.map(item => {
+                    const cells = cols.map(f => `<td>${escapeHtml(item[f.name])}</td>`).join('');
+                    return `<tr>${cells}<td style="white-space:nowrap;">
+                        <button class="btn btn-outline" onclick="openCollectionModal('${key}', ${item.ID})">Edit</button>
+                        <button class="btn btn-danger" onclick="deleteCollectionItem('${key}', ${item.ID})">Hapus</button>
+                    </td></tr>`;
+                }).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        let activeCollection = null;
+
+        function openCollectionModal(key, id) {
+            activeCollection = { key: key, id: id || null };
+            const cfg = collections[key];
+            document.getElementById('collectionModalTitle').textContent =
+                (id ? 'Edit — ' : 'Tambah — ') + cfg.title;
+
+            const holder = document.getElementById('collectionFormFields');
+            holder.innerHTML = cfg.fields.map(f => {
+                const label = `<label>${f.label}${f.required ? ' *' : ''}</label>`;
+                const req = f.required ? 'required' : '';
+                if (f.type === 'textarea') {
+                    return `<div class="form-group">${label}<textarea name="${f.name}" class="form-control" ${req}></textarea></div>`;
+                }
+                if (f.type === 'select') {
+                    const opts = f.options.map(o => `<option value="${o[0]}">${o[1]}</option>`).join('');
+                    return `<div class="form-group">${label}<select name="${f.name}" class="form-control">${opts}</select></div>`;
+                }
+                const type = f.type === 'number' ? 'number' : 'text';
+                const ph = f.placeholder ? ` placeholder="${f.placeholder}"` : '';
+                return `<div class="form-group">${label}<input type="${type}" name="${f.name}" class="form-control" ${req}${ph}></div>`;
+            }).join('');
+
+            if (id) {
+                fetch(cfg.endpoint).then(r => r.json()).then(list => {
+                    const item = (list || []).find(x => x.ID === id);
+                    if (!item) return;
+                    cfg.fields.forEach(f => {
+                        const el = holder.querySelector(`[name="${f.name}"]`);
+                        if (el && item[f.name] != null) el.value = item[f.name];
+                    });
+                }).catch(() => {});
+            }
+            document.getElementById('collectionModalOverlay').classList.add('active');
+        }
+
+        function closeCollectionModal() {
+            document.getElementById('collectionModalOverlay').classList.remove('active');
+            activeCollection = null;
+        }
+
+        document.getElementById('collectionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!activeCollection) return;
+            const key = activeCollection.key;
+            const id = activeCollection.id;
+            const cfg = collections[key];
+
+            const data = {};
+            cfg.fields.forEach(f => {
+                const el = e.target.querySelector(`[name="${f.name}"]`);
+                if (!el) return;
+                data[f.name] = f.type === 'number' ? (parseInt(el.value, 10) || 0) : el.value;
+            });
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.textContent = 'Menyimpan...'; btn.disabled = true;
+            try {
+                const res = await fetch(id ? `${cfg.endpoint}/${id}` : cfg.endpoint, {
+                    method: id ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) { closeCollectionModal(); fetchCollection(key); }
+                else alert('Gagal menyimpan data');
+            } catch (err) { console.error(err); alert('Gagal menyimpan data'); }
+            finally { btn.textContent = 'Simpan'; btn.disabled = false; }
+        });
+
+        async function deleteCollectionItem(key, id) {
+            if (!confirm('Hapus data ini?')) return;
+            try {
+                const res = await fetch(`${collections[key].endpoint}/${id}`, { method: 'DELETE' });
+                if (res.ok) fetchCollection(key);
+            } catch (err) { console.error(err); }
+        }
+
+        // --- PESAN MASUK ---
+        async function fetchMessages() {
+            const holder = document.getElementById('messageList');
+            holder.innerHTML = 'Loading...';
+            try {
+                const res = await fetch('/admin/api/messages');
+                if (res.status === 401) { window.location.href = '/login'; return; }
+                const data = await res.json();
+                if (!data || data.length === 0) {
+                    holder.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:1rem 0;">Belum ada pesan masuk.</p>';
+                    return;
+                }
+                holder.innerHTML = data.map(m => `
+                    <div style="padding:1.25rem 0;border-bottom:1px solid var(--border);">
+                        <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:baseline;">
+                            <div>
+                                <strong>${escapeHtml(m.Name)}</strong>
+                                <span style="color:#94a3b8;font-size:0.85rem;"> &lt;${escapeHtml(m.Email || 'tanpa-email')}&gt;</span>
+                                ${m.IsRead ? '' : '<span style="background:var(--primary);color:#fff;font-size:0.7rem;padding:2px 8px;border-radius:99px;margin-left:8px;">BARU</span>'}
+                            </div>
+                            <span style="color:#94a3b8;font-size:0.8rem;">${new Date(m.CreatedAt).toLocaleString('id-ID')}</span>
+                        </div>
+                        <p style="margin:0.6rem 0;white-space:pre-line;color:#cbd5e1;">${escapeHtml(m.Message)}</p>
+                        <div style="display:flex;gap:0.5rem;">
+                            ${m.IsRead ? '' : `<button class="btn btn-outline" onclick="markMessageRead(${m.ID})">Tandai dibaca</button>`}
+                            <button class="btn btn-danger" onclick="deleteMessage(${m.ID})">Hapus</button>
+                        </div>
+                    </div>`).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        async function markMessageRead(id) {
+            try {
+                await fetch(`/admin/api/messages/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ IsRead: true })
+                });
+                fetchMessages();
+            } catch (err) { console.error(err); }
+        }
+
+        async function deleteMessage(id) {
+            if (!confirm('Hapus pesan ini?')) return;
+            try {
+                const res = await fetch(`/admin/api/messages/${id}`, { method: 'DELETE' });
+                if (res.ok) fetchMessages();
+            } catch (err) { console.error(err); }
+        }
+
+        // Init koleksi
+        Object.keys(collections).forEach(fetchCollection);
+        fetchMessages();
 
     </script>
 </body>
