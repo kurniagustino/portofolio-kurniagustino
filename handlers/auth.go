@@ -32,12 +32,18 @@ func jwtSecret() string {
 
 // LoginUI merender halaman login
 func LoginUI(c *fiber.Ctx) error {
-	return c.Render("login", nil)
+	s := GetSettings()
+	return c.Render("login", fiber.Map{
+		"Settings": s,
+	})
 }
 
 // AdminUI merender halaman admin dashboard
 func AdminUI(c *fiber.Ctx) error {
-	return c.Render("admin", nil)
+	s := GetSettings()
+	return c.Render("admin", fiber.Map{
+		"Settings": s,
+	})
 }
 
 // Login API untuk memvalidasi user

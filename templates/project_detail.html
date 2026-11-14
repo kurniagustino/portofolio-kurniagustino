@@ -20,7 +20,18 @@
     <meta name="twitter:description" content="{{ $pdesc }}">
     {{ if .OGImage }}<meta name="twitter:image" content="{{ .OGImage }}">{{ end }}
     {{ if .Schema }}<script type="application/ld+json">{{ .Schema }}</script>{{ end }}
-    <script>document.documentElement.classList.add('js');</script>
+    <script>
+      (function() {
+        document.documentElement.classList.add('js');
+        var defaultTheme = '{{ if and .Settings .Settings.Theme }}{{ .Settings.Theme }}{{ else }}dark{{ end }}';
+        var t = localStorage.getItem('theme') || defaultTheme;
+        if (t === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -316,15 +327,17 @@
       const themeToggleBtn = document.getElementById('theme-toggle');
       const html = document.documentElement;
 
-      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        html.classList.add('dark');
-      } else {
-        html.classList.remove('dark');
-      }
-
       themeToggleBtn?.addEventListener('click', () => {
         html.classList.toggle('dark');
-        localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
+        const newTheme = html.classList.contains('dark') ? 'dark' : 'light';
+        localStorage.setItem('theme', newTheme);
+      });
+
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'theme' && e.newValue) {
+          if (e.newValue === 'dark') html.classList.add('dark');
+          else html.classList.remove('dark');
+        }
       });
     </script>
       <script>

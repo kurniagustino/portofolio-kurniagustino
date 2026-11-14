@@ -32,7 +32,18 @@
     <meta name="twitter:description" content="{{ $desc }}">
     {{ if .OGImage }}<meta name="twitter:image" content="{{ .OGImage }}">{{ end }}
     <script type="application/ld+json">{{ .Schema }}</script>
-    <script>document.documentElement.classList.add('js');</script>
+    <script>
+      (function() {
+        document.documentElement.classList.add('js');
+        var defaultTheme = '{{ if .Settings.Theme }}{{ .Settings.Theme }}{{ else }}dark{{ end }}';
+        var t = localStorage.getItem('theme') || defaultTheme;
+        if (t === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -91,6 +102,10 @@
       .js .anime-hidden {
         opacity: 0;
         visibility: hidden;
+        will-change: transform, opacity;
+      }
+      .js .reveal-ready {
+        transition: none;
       }
       
       .glitch-wrapper {
@@ -119,6 +134,24 @@
         animation: caret-blink 1s steps(1) infinite;
       }
       @keyframes caret-blink { 50% { opacity: 0; } }
+
+      /* Parallax ambient glows */
+      .ambient-orb { will-change: transform; transition: transform 0.2s linear; }
+      /* Shimmer line for cards on reveal */
+      @keyframes shimmer-sweep {
+        0% { transform: translateX(-120%) skewX(-12deg); opacity: 0; }
+        30% { opacity: .35; }
+        100% { transform: translateX(220%) skewX(-12deg); opacity: 0; }
+      }
+      .card-shimmer::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(6,182,212,0.18), transparent);
+        pointer-events: none;
+        animation: shimmer-sweep 1.1s ease-out 1;
+      }
+      .tilt-card { transform-style: preserve-3d; transition: transform 0.25s ease, box-shadow 0.25s ease; }
 
       /* Navigasi: garis bawah menyala dari kiri saat hover/focus */
       .nav-items a { position: relative; }
@@ -189,9 +222,10 @@
     <div class="fixed inset-0 z-[-1] bg-grid-slate-100 [mask-image:linear-gradient(to_bottom,white,transparent)]"></div>
     
     <!-- Ambient Glows -->
-    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
-        <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-accent-cyan/10 dark:bg-accent-cyan/[0.03] rounded-full blur-[120px] animate-pulse-slow"></div>
-        <div class="absolute -bottom-[20%] -right-[10%] w-[50%] h-[50%] bg-accent-indigo/10 dark:bg-accent-indigo/[0.03] rounded-full blur-[120px] animate-pulse-slow" style="animation-delay: 2s;"></div>
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none" id="ambient-layer">
+        <div class="ambient-orb absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-accent-cyan/10 dark:bg-accent-cyan/[0.03] rounded-full blur-[120px] animate-pulse-slow" data-speed="0.06"></div>
+        <div class="ambient-orb absolute -bottom-[20%] -right-[10%] w-[50%] h-[50%] bg-accent-indigo/10 dark:bg-accent-indigo/[0.03] rounded-full blur-[120px] animate-pulse-slow" data-speed="-0.05" style="animation-delay: 2s;"></div>
+        <div class="ambient-orb absolute top-[35%] right-[5%] w-[28%] h-[28%] bg-accent-blue/10 dark:bg-accent-blue/[0.03] rounded-full blur-[100px]" data-speed="0.04"></div>
     </div>
 
     <!-- Navbar -->
@@ -229,6 +263,10 @@
 
           <!-- Mobile menu button -->
           <div class="flex items-center space-x-2 md:hidden">
+            <button id="theme-toggle-mobile" class="w-10 h-10 rounded-lg glass-card flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-all" aria-label="Toggle tema">
+              <svg class="w-4 h-4 text-slate-600 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
+              <svg class="w-4 h-4 text-slate-300 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+            </button>
             <button id="mobile-menu-toggle" class="w-10 h-10 rounded-lg glass-card flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
               <svg id="menu-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
               <svg id="close-icon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -681,20 +719,25 @@
     <script>
         // --- Theme Toggle Logic ---
         const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeToggleMobileBtn = document.getElementById('theme-toggle-mobile');
         const html = document.documentElement;
-
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            html.classList.add('dark');
-        } else {
-            html.classList.remove('dark');
-        }
 
         function toggleTheme() {
             html.classList.toggle('dark');
-            localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
+            const newTheme = html.classList.contains('dark') ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
         }
 
         themeToggleBtn?.addEventListener('click', toggleTheme);
+        themeToggleMobileBtn?.addEventListener('click', toggleTheme);
+
+        // Sync jika tema berubah dari tab / window lain
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'theme' && e.newValue) {
+                if (e.newValue === 'dark') html.classList.add('dark');
+                else html.classList.remove('dark');
+            }
+        });
 
         // --- Mobile Menu Logic ---
         const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
@@ -726,20 +769,14 @@
         // --- Anime.js Animations ---
         document.addEventListener("DOMContentLoaded", () => {
             const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-            // Indikator progres baca — jalan di kedua jalur (bukan dekorasi)
             initScrollProgress();
 
-            // Bila pengguna meminta kurangi gerak ATAU anime.js gagal dimuat:
-            // langsung tampilkan semua konten, tanpa menyembunyikan apa pun.
             if (reduceMotion || typeof anime === 'undefined') {
                 document.querySelectorAll('.anime-hidden').forEach(el => el.classList.remove('anime-hidden'));
                 return;
             }
 
             /* ---------- Helper efek ---------- */
-
-            // Efek ketik dengan karet berkedip (motif terminal)
             function typeText(el, cps) {
                 if (!el) return;
                 const final = el.textContent;
@@ -750,16 +787,12 @@
                 const step = () => {
                     i++;
                     el.textContent = final.slice(0, i);
-                    if (i < final.length) {
-                        setTimeout(step, 1000 / cps);
-                    } else {
-                        setTimeout(() => el.classList.remove('typing'), 800);
-                    }
+                    if (i < final.length) setTimeout(step, 1000 / cps);
+                    else setTimeout(() => el.classList.remove('typing'), 800);
                 };
                 step();
             }
 
-            // Efek decode: huruf acak menyala lalu menyatu ke teks asli
             function scrambleText(el, duration) {
                 if (!el) return;
                 const final = el.textContent;
@@ -771,17 +804,14 @@
                     let out = '';
                     for (let i = 0; i < final.length; i++) {
                         const ch = final[i];
-                        if (i < revealed || ch === ' ' || ch === '\n') out += ch;
-                        else out += glyphs[Math.floor(Math.random() * glyphs.length)];
+                        out += (i < revealed || ch === ' ' || ch === '\n') ? ch : glyphs[Math.floor(Math.random() * glyphs.length)];
                     }
                     el.textContent = out;
-                    if (p < 1) requestAnimationFrame(frame);
-                    else el.textContent = final;
+                    if (p < 1) requestAnimationFrame(frame); else el.textContent = final;
                 };
                 requestAnimationFrame(frame);
             }
 
-            // Angka naik dari 0 dengan easing keluar (tanpa dependensi)
             function countUp(el, to, duration) {
                 if (!el || !isFinite(to)) return;
                 const start = performance.now();
@@ -789,13 +819,11 @@
                     const p = Math.min(1, (now - start) / duration);
                     const eased = 1 - Math.pow(1 - p, 3);
                     el.textContent = Math.round(to * eased);
-                    if (p < 1) requestAnimationFrame(step);
-                    else el.textContent = to;
+                    if (p < 1) requestAnimationFrame(step); else el.textContent = to;
                 };
                 requestAnimationFrame(step);
             }
 
-            // Label mono tiap section "dirender" per-huruf seperti terminal
             function renderLabel(el) {
                 if (!el || el.dataset.rendered) return;
                 el.dataset.rendered = '1';
@@ -812,14 +840,32 @@
                 anime({
                     targets: Array.from(el.children),
                     opacity: [0, 1],
-                    translateY: [3, 0],
-                    delay: anime.stagger(22),
-                    duration: 320,
+                    translateY: [4, 0],
+                    delay: anime.stagger(16),
+                    duration: 280,
                     easing: 'easeOutQuad'
                 });
             }
 
-            // Progres baca: lebar bar mengikuti posisi scroll (rAF, passive)
+            function revealHeading(el) {
+                if (!el || el.dataset.revealed) return;
+                el.dataset.revealed = '1';
+                anime({
+                    targets: el,
+                    opacity: [0, 1],
+                    translateY: [18, 0],
+                    filter: ['blur(8px)', 'blur(0px)'],
+                    duration: 850,
+                    easing: 'easeOutExpo'
+                });
+            }
+
+            function show(els) {
+                if (!els) return;
+                const list = els.length !== undefined ? Array.from(els) : [els];
+                list.forEach(el => el.classList.remove('anime-hidden'));
+            }
+
             function initScrollProgress() {
                 const bar = document.getElementById('scroll-progress');
                 if (!bar) return;
@@ -831,222 +877,169 @@
                     ticking = false;
                 };
                 window.addEventListener('scroll', () => {
-                    if (!ticking) {
-                        ticking = true;
-                        requestAnimationFrame(update);
-                    }
+                    if (!ticking) { ticking = true; requestAnimationFrame(update); }
                 }, { passive: true });
                 update();
             }
 
-            /* ---------- Momen fokal: urutan pembuka bertema terminal ---------- */
-            anime.timeline({
-                easing: 'easeOutExpo'
-            })
+            // Subtle parallax for ambient orbs + hero depth
+            const orbs = document.querySelectorAll('.ambient-orb');
+            const heroContent = document.querySelector('.hero-content');
+            let parTick = false;
+            window.addEventListener('scroll', () => {
+                if (parTick) return;
+                parTick = true;
+                requestAnimationFrame(() => {
+                    const y = window.scrollY || 0;
+                    orbs.forEach(o => {
+                        const s = parseFloat(o.dataset.speed || '0.04');
+                        o.style.transform = `translate3d(0, ${y * s}px, 0)`;
+                    });
+                    if (heroContent) {
+                        const p = Math.min(1, y / 520);
+                        heroContent.style.transform = `translate3d(0, ${y * 0.12}px, 0)`;
+                        heroContent.style.opacity = String(1 - p * 0.55);
+                    }
+                    parTick = false;
+                });
+            }, { passive: true });
+
+            // Hover tilt for cards (pointer devices)
+            if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+                document.querySelectorAll('.service-card, .cred-card, .testi-card, .post-card, .skill-card').forEach(card => {
+                    card.classList.add('tilt-card');
+                    card.addEventListener('mousemove', e => {
+                        const r = card.getBoundingClientRect();
+                        const px = (e.clientX - r.left) / r.width - 0.5;
+                        const py = (e.clientY - r.top) / r.height - 0.5;
+                        card.style.transform = `perspective(900px) rotateX(${-py * 7}deg) rotateY(${px * 7}deg) translateY(-4px)`;
+                    });
+                    card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+                });
+            }
+
+            /* ---------- Hero timeline ---------- */
+            anime.timeline({ easing: 'easeOutExpo' })
             .add({
                 targets: '.nav-brand',
-                opacity: [0, 1],
-                translateX: [-20, 0],
-                duration: 700,
-                begin: function() {
-                    document.querySelector('.nav-brand').classList.remove('anime-hidden');
-                }
+                opacity: [0, 1], translateX: [-24, 0], duration: 700,
+                begin: () => show(document.querySelector('.nav-brand'))
             })
             .add({
                 targets: '.nav-items > *',
-                opacity: [0, 1],
-                translateY: [-10, 0],
-                delay: anime.stagger(60),
-                duration: 450,
-                begin: function() {
-                    document.querySelectorAll('.nav-items > *').forEach(el => el.classList.remove('anime-hidden'));
-                }
-            }, '-=500')
+                opacity: [0, 1], translateY: [-12, 0],
+                delay: anime.stagger(55), duration: 420,
+                begin: () => show(document.querySelectorAll('.nav-items > *'))
+            }, '-=520')
             .add({
                 targets: '.hero-stagger',
-                opacity: [0, 1],
-                translateY: [20, 0],
-                delay: anime.stagger(100),
-                duration: 650,
-                begin: function() {
-                    document.querySelectorAll('.hero-stagger').forEach(el => el.classList.remove('anime-hidden'));
-                    // Label mono diketik, judul gradasi didecode
-                    typeText(document.getElementById('hero-type'), 40);
-                    setTimeout(() => scrambleText(document.getElementById('hero-sub'), 650), 550);
+                opacity: [0, 1], translateY: [28, 0], filter: ['blur(6px)', 'blur(0px)'],
+                delay: anime.stagger(110), duration: 750,
+                begin: () => {
+                    show(document.querySelectorAll('.hero-stagger'));
+                    typeText(document.getElementById('hero-type'), 42);
+                    setTimeout(() => scrambleText(document.getElementById('hero-sub'), 700), 520);
                 }
-            }, '-=700')
+            }, '-=650')
             .add({
                 targets: '.hero-terminal',
-                opacity: [0, 1],
-                translateY: [24, 0],
-                duration: 600,
-                begin: function() {
-                    document.querySelector('.hero-terminal').classList.remove('anime-hidden');
-                    anime.set('.term-line', { opacity: 0, translateX: -8 });
-                }
-            }, '-=600')
+                opacity: [0, 1], translateY: [26, 0], scale: [0.97, 1],
+                duration: 650,
+                begin: () => { show(document.querySelector('.hero-terminal')); anime.set('.term-line', { opacity: 0, translateX: -10 }); }
+            }, '-=500')
             .add({
                 targets: '.term-line',
-                opacity: [0, 1],
-                translateX: [-8, 0],
-                delay: anime.stagger(70),
-                duration: 350,
-                easing: 'easeOutQuad',
-                complete: function() {
+                opacity: [0, 1], translateX: [-10, 0],
+                delay: anime.stagger(65), duration: 360, easing: 'easeOutQuad',
+                complete: () => {
                     const counter = document.getElementById('term-count');
-                    if (counter) countUp(counter, parseInt(counter.dataset.count, 10) || 0, 700);
+                    if (counter) countUp(counter, parseInt(counter.dataset.count, 10) || 0, 800);
                 }
-            }, '-=400');
+            }, '-=350');
 
-            // Scroll Reveal Animations using Intersection Observer + Anime.js
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: "0px 0px -50px 0px"
-            };
+            /* ---------- Scroll reveals ---------- */
+            const observerOptions = { threshold: 0.12, rootMargin: "0px 0px -60px 0px" };
 
             const animateOnScroll = (entries, observer) => {
                 entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const target = entry.target;
+                    if (!entry.isIntersecting) return;
+                    const target = entry.target;
+                    target.querySelectorAll('h3.font-mono').forEach(renderLabel);
+                    target.querySelectorAll('h2').forEach(revealHeading);
 
-                        // Label mono section dirender per-huruf (motif terminal)
-                        target.querySelectorAll('h3.font-mono').forEach(renderLabel);
-                        
-                        // About Section
-                        if (target.id === 'about') {
-                            anime({
-                                targets: '.about-image',
-                                opacity: [0, 1],
-                                scale: [0.9, 1],
-                                duration: 1000,
-                                easing: 'easeOutQuart',
-                                begin: () => document.querySelector('.about-image').classList.remove('anime-hidden')
-                            });
-                            anime({
-                                targets: '.about-item',
-                                opacity: [0, 1],
-                                translateX: [30, 0],
-                                delay: anime.stagger(150),
-                                duration: 800,
-                                easing: 'easeOutQuart',
-                                begin: () => document.querySelectorAll('.about-item').forEach(el => el.classList.remove('anime-hidden'))
-                            });
-                        }
-
-                        // Skills Section
-                        if (target.id === 'skills') {
-                            anime({
-                                targets: '.skills-header',
-                                opacity: [0, 1],
-                                translateY: [20, 0],
-                                duration: 800,
-                                easing: 'easeOutQuad',
-                                begin: () => document.querySelector('.skills-header').classList.remove('anime-hidden')
-                            });
-                            anime({
-                                targets: '.skill-card',
-                                opacity: [0, 1],
-                                scale: [0.94, 1],
-                                delay: anime.stagger(60),
-                                duration: 600,
-                                easing: 'easeOutQuart',
-                                begin: () => document.querySelectorAll('.skill-card').forEach(el => el.classList.remove('anime-hidden'))
-                            });
-                        }
-
-                        // Projects Section
-                        if (target.id === 'projects') {
-                            anime({
-                                targets: '.project-header',
-                                opacity: [0, 1],
-                                translateY: [20, 0],
-                                duration: 800,
-                                easing: 'easeOutQuad',
-                                begin: () => document.querySelector('.project-header').classList.remove('anime-hidden')
-                            });
-                            anime({
-                                targets: '.project-card',
-                                opacity: [0, 1],
-                                translateX: [30, 0],
-                                delay: anime.stagger(150),
-                                duration: 800,
-                                easing: 'easeOutQuart',
-                                begin: () => document.querySelectorAll('.project-card').forEach(el => el.classList.remove('anime-hidden'))
-                            });
-                        }
-
-                        // Experience Section — arah masuk mengikuti sisi kartu (desktop)
-                        if (target.id === 'experience') {
-                            const track = target.querySelector('.timeline-track');
-                            if (track) requestAnimationFrame(() => track.classList.add('drawn'));
-                            anime({
-                                targets: '.exp-header',
-                                opacity: [0, 1],
-                                translateY: [20, 0],
-                                duration: 800,
-                                easing: 'easeOutQuart',
-                                begin: () => document.querySelector('.exp-header').classList.remove('anime-hidden')
-                            });
-                            const expItems = document.querySelectorAll('.exp-item');
-                            const wide = window.matchMedia('(min-width: 768px)').matches;
-                            expItems.forEach((el, i) => {
-                                const opts = {
-                                    targets: el,
-                                    opacity: [0, 1],
-                                    duration: 700,
-                                    delay: i * 130,
-                                    easing: 'easeOutQuart',
-                                    begin: () => el.classList.remove('anime-hidden')
-                                };
-                                // Ganjil (baris pertama) kartu ada di kiri → masuk dari kiri
-                                if (wide) opts.translateX = [(i % 2 ? 40 : -40), 0];
-                                else opts.translateY = [30, 0];
-                                anime(opts);
-                            });
-                        }
-
-                        // Contact Section
-                        if (target.id === 'contact') {
-                            anime({
-                                targets: '.contact-box',
-                                opacity: [0, 1],
-                                translateY: [40, 0],
-                                duration: 900,
-                                easing: 'easeOutQuart',
-                                begin: () => document.querySelector('.contact-box').classList.remove('anime-hidden')
-                            });
-                        }
-
-                        // Section lain (layanan, pendidikan, testimoni, blog):
-                        // reveal tenang, kartu naik bertahap
-                        const knownIds = ['about', 'skills', 'projects', 'experience', 'contact'];
-                        if (!knownIds.includes(target.id)) {
-                            const items = target.querySelectorAll('.anime-hidden');
-                            if (items.length) {
-                                anime({
-                                    targets: items,
-                                    opacity: [0, 1],
-                                    translateY: [24, 0],
-                                    delay: anime.stagger(90),
-                                    duration: 650,
-                                    easing: 'easeOutQuart',
-                                    begin: () => items.forEach(el => el.classList.remove('anime-hidden'))
-                                });
-                            }
-                        }
-
-                        observer.unobserve(target); // Only animate once
+                    if (target.id === 'about') {
+                        anime({ targets: '.about-image', opacity: [0,1], scale: [0.88,1], rotate: ['-2deg','0deg'], duration: 1100, easing: 'easeOutExpo', begin: () => show(document.querySelector('.about-image')) });
+                        anime({ targets: '.about-item', opacity: [0,1], translateX: [36,0], delay: anime.stagger(140, {start: 150}), duration: 850, easing: 'easeOutQuart', begin: () => show(document.querySelectorAll('.about-item')) });
                     }
+                    else if (target.id === 'services') {
+                        anime({ targets: '.services-header', opacity: [0,1], translateY: [24,0], duration: 750, easing: 'easeOutQuart', begin: () => show(document.querySelector('.services-header')) });
+                        document.querySelectorAll('.service-card').forEach((el, i) => {
+                            show(el);
+                            anime({ targets: el, opacity: [0,1], translateY: [40,0], scale: [0.96,1], rotate: [i % 2 ? '1.2deg' : '-1.2deg', '0deg'], delay: 120 + i * 110, duration: 800, easing: 'easeOutExpo' });
+                        });
+                    }
+                    else if (target.id === 'skills') {
+                        anime({ targets: '.skills-header', opacity: [0,1], translateY: [20,0], duration: 750, easing: 'easeOutQuart', begin: () => show(document.querySelector('.skills-header')) });
+                        show(document.querySelectorAll('.skill-card'));
+                        anime({ targets: '.skill-card', opacity: [0,1], scale: [0.85,1], translateY: [18,0], delay: anime.stagger(35, {grid: [5, 5], from: 'center'}), duration: 550, easing: 'easeOutBack' });
+                    }
+                    else if (target.id === 'projects') {
+                        anime({ targets: '.project-header', opacity: [0,1], translateY: [22,0], duration: 750, easing: 'easeOutQuart', begin: () => show(document.querySelector('.project-header')) });
+                        show(document.querySelectorAll('.project-card'));
+                        anime({ targets: '.project-card', opacity: [0,1], translateX: [50,0], scale: [0.97,1], delay: anime.stagger(140), duration: 850, easing: 'easeOutExpo',
+                          complete: () => document.querySelectorAll('.project-card').forEach(c => c.classList.add('card-shimmer')) });
+                    }
+                    else if (target.id === 'experience') {
+                        const track = target.querySelector('.timeline-track');
+                        if (track) requestAnimationFrame(() => track.classList.add('drawn'));
+                        anime({ targets: '.exp-header', opacity: [0,1], translateY: [20,0], duration: 750, easing: 'easeOutQuart', begin: () => show(document.querySelector('.exp-header')) });
+                        const expItems = document.querySelectorAll('.exp-item');
+                        const wide = window.matchMedia('(min-width: 768px)').matches;
+                        expItems.forEach((el, i) => {
+                            show(el);
+                            const fromX = wide ? (i % 2 ? 50 : -50) : 0;
+                            const fromY = wide ? 10 : 34;
+                            anime({ targets: el, opacity: [0,1], translateX: [fromX,0], translateY: [fromY,0], scale: [0.97,1], duration: 800, delay: i * 140, easing: 'easeOutExpo' });
+                        });
+                    }
+                    else if (target.id === 'education') {
+                        anime({ targets: '.cred-header', opacity: [0,1], translateY: [22,0], duration: 750, easing: 'easeOutQuart', begin: () => show(document.querySelector('.cred-header')) });
+                        show(document.querySelectorAll('.cred-card'));
+                        anime({ targets: '.cred-card', opacity: [0,1], scale: [0.9,1], translateY: [20,0], delay: anime.stagger(100, {from: 'first'}), duration: 700, easing: 'easeOutBack' });
+                    }
+                    else if (target.id === 'testimonials') {
+                        anime({ targets: '.testi-header', opacity: [0,1], translateY: [22,0], duration: 750, easing: 'easeOutQuart', begin: () => show(document.querySelector('.testi-header')) });
+                        const cards = document.querySelectorAll('.testi-card');
+                        cards.forEach((el, i) => {
+                            show(el);
+                            const dir = i === 0 ? -36 : (i === 2 ? 36 : 0);
+                            anime({ targets: el, opacity: [0,1], translateX: [dir,0], translateY: [28,0], scale: [0.96,1], delay: 120 + i * 130, duration: 820, easing: 'easeOutExpo' });
+                        });
+                    }
+                    else if (target.id === 'blog') {
+                        anime({ targets: '.blog-header', opacity: [0,1], translateY: [22,0], duration: 750, easing: 'easeOutQuart', begin: () => show(document.querySelector('.blog-header')) });
+                        show(document.querySelectorAll('.post-card'));
+                        anime({ targets: '.post-card', opacity: [0,1], translateY: [30,0], rotateX: [8,0], scale: [0.97,1], delay: anime.stagger(120), duration: 780, easing: 'easeOutExpo' });
+                    }
+                    else if (target.id === 'contact') {
+                        anime({ targets: '.contact-box', opacity: [0,1], translateY: [50,0], scale: [0.96,1], duration: 1000, easing: 'easeOutExpo', begin: () => show(document.querySelector('.contact-box')) });
+                    }
+                    else {
+                        const items = target.querySelectorAll('.anime-hidden');
+                        if (items.length) {
+                            show(items);
+                            anime({ targets: items, opacity: [0,1], translateY: [28,0], delay: anime.stagger(90), duration: 700, easing: 'easeOutQuart' });
+                        }
+                    }
+
+                    observer.unobserve(target);
                 });
             };
 
             const scrollObserver = new IntersectionObserver(animateOnScroll, observerOptions);
             document.querySelectorAll('.scroll-section').forEach(section => {
-                // Determine section by looking at parent ID
                 const parentSection = section.closest('section');
-                if (parentSection) {
-                    scrollObserver.observe(parentSection);
-                }
+                if (parentSection) scrollObserver.observe(parentSection);
             });
         });
 
@@ -1060,7 +1053,6 @@
                 nav.classList.remove('shadow-lg', 'py-1');
             }
         });
-        
     </script>
   </body>
 </html>

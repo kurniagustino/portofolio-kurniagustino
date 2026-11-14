@@ -13,6 +13,9 @@ func GetSettingsAPI(c *fiber.Ctx) error {
 	if err := database.DB.Where(models.SiteSetting{ID: 1}).FirstOrCreate(&setting).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to load settings"})
 	}
+	if setting.Theme == "" {
+		setting.Theme = "dark"
+	}
 	return c.JSON(setting)
 }
 
@@ -29,7 +32,11 @@ func GetSettings() models.SiteSetting {
 		GithubLink:   "https://github.com/kurniagustino",
 		LinkedInLink: "https://www.linkedin.com/in/kurnia-gustino-pratama-17022439a/",
 		EmailLink:    "mailto:kurniagustino@gmail.com",
+		Theme:        "dark",
 	}).FirstOrCreate(&settings)
+	if settings.Theme == "" {
+		settings.Theme = "dark"
+	}
 	return settings
 }
 
@@ -47,6 +54,9 @@ func UpdateSettingsAPI(c *fiber.Ctx) error {
 
 	// Force ID to 1 to maintain single row
 	setting.ID = 1
+	if setting.Theme != "light" && setting.Theme != "dark" {
+		setting.Theme = "dark"
+	}
 
 	if err := database.DB.Save(&setting).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to save settings"})

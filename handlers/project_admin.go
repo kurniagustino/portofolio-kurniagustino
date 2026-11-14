@@ -1,13 +1,19 @@
 package handlers
 
 import (
+	"crypto/rand"
+	"encoding/hex"
+	"errors"
 	"fmt"
+	"io"
 	"mime/multipart"
+	"net/http"
 	"os"
 	"path/filepath"
 	"portfolio_kurnia/database"
 	"portfolio_kurnia/models"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -86,16 +92,103 @@ func attachProjectImages(c *fiber.Ctx, projectID uint) {
 	}
 }
 
-// saveImageWithCtx menyimpan gambar ke ./media dan mengembalikan path publik.
-func saveImageWithCtx(c *fiber.Ctx, file *multipart.FileHeader) (string, error) {
+// allowedImageMIME: hanya MIME yang aman untuk gambar.
+var allowedImageMIME = map[string]string{
+	"image/jpeg": ".jpg",
+	"image/png":  ".png",
+	"image/gif":  ".gif",
+	"image/webp": ".webp",
+}
+
+// maxUploadSize: 5 MB
+const maxUploadSize = 5 * 1024 * 1024
+
+// detectMIME membaca 512 byte pertama untuk deteksi tipe file (magic bytes).
+func detectMIME(f *multipart.FileHeader) (string, error) {
+	src, err := f.Open()
+	if err != nil {
+		return "", err
+	}
+	defer src.Close()
+	buf := make([]byte, 512)
+	n, err := io.ReadAtLeast(src, buf, 1)
+	if err != nil && !errors.Is(err, io.ErrUnexpectedEOF) {
+		return "", err
+	}
+	return http.DetectContentType(buf[:n]), nil
+}
+
+// saveImageSecure menyimpan gambar ke ./media dengan validasi ketat.
+// - Cek ukuran (maks 5 MB)
+// - Cek MIME via magic bytes, bukan ekstensi filename
+// - Nama file: hex random, bukan dari input user
+func saveImageSecure(c *fiber.Ctx, file *multipart.FileHeader) (string, error) {
+	if file.Size > maxUploadSize {
+		return "", fmt.Errorf("ukuran file melebihi batas 5 MB")
+	}
+
+	mime, err := detectMIME(file)
+	if err != nil {
+		return "", fmt.Errorf("gagal membaca file")
+	}
+	// Potong parameter MIME, mis. "image/jpeg; charset=utf-8" → "image/jpeg"
+	mime = strings.SplitN(mime, ";", 2)[0]
+	mime = strings.TrimSpace(mime)
+
+	ext, ok := allowedImageMIME[mime]
+	if !ok {
+		return "", fmt.Errorf("tipe file tidak diizinkan: %s", mime)
+	}
+
+	// Nama file: 32 byte hex random → tidak ada path traversal
+	randBytes := make([]byte, 16)
+	if _, err := rand.Read(randBytes); err != nil {
+		return "", fmt.Errorf("gagal generate nama file")
+	}
+	filename := hex.EncodeToString(randBytes) + ext
+
 	mediaDir := "./media"
-	os.MkdirAll(mediaDir, 0755)
-	filename := strconv.FormatInt(time.Now().UnixNano(), 10) + filepath.Ext(file.Filename)
-	path := filepath.Join(mediaDir, filename)
-	if err := c.SaveFile(file, path); err != nil {
+	if err := os.MkdirAll(mediaDir, 0750); err != nil {
+		return "", err
+	}
+
+	// Gunakan path.Join yang bersih — tidak ada ".." karena nama dari rand
+	dst := filepath.Join(mediaDir, filename)
+	if err := c.SaveFile(file, dst); err != nil {
 		return "", err
 	}
 	return "/media/" + filename, nil
+}
+
+// saveImageWithCtx adalah alias publik (dipakai handler lain).
+func saveImageWithCtx(c *fiber.Ctx, file *multipart.FileHeader) (string, error) {
+	return saveImageSecure(c, file)
+}
+
+// UploadMediaAPI: endpoint umum POST /admin/api/upload → { "url": "/media/xxx.jpg" }
+func UploadMediaAPI(c *fiber.Ctx) error {
+	file, err := c.FormFile("file")
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "File tidak ditemukan di request"})
+	}
+	url, err := saveImageSecure(c, file)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.JSON(fiber.Map{"url": url})
+}
+
+// deleteMediaFile menghapus file fisik dari ./media bila path adalah /media/...
+func deleteMediaFile(imgPath string) {
+	if !strings.HasPrefix(imgPath, "/media/") {
+		return // jangan hapus file di luar ./media
+	}
+	// Pastikan tidak ada ".." di path
+	clean := filepath.Clean(imgPath)
+	if strings.Contains(clean, "..") {
+		return
+	}
+	_ = os.Remove("." + clean)
 }
 
 // uniqueSlug membuat slug unik dari judul, mis. "sistem-informasi-pegawai-2"

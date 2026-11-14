@@ -18,14 +18,27 @@ func GetMenusAPI(c *fiber.Ctx) error {
 func CreateMenuAPI(c *fiber.Ctx) error {
 	var menu models.MenuLink
 	if err := c.BodyParser(&menu); err != nil {
-		return c.Status(400).JSON(fiber.Map{"error": "Invalid input"})
+		return c.Status(400).JSON(fiber.Map{"error": "Input tidak valid"})
 	}
-
 	if err := database.DB.Create(&menu).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to create menu"})
 	}
-
 	return c.JSON(fiber.Map{"message": "Menu created", "data": menu})
+}
+
+// UpdateMenuAPI updates an existing menu link
+func UpdateMenuAPI(c *fiber.Ctx) error {
+	var menu models.MenuLink
+	if err := database.DB.First(&menu, c.Params("id")).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{"error": "Menu tidak ditemukan"})
+	}
+	if err := c.BodyParser(&menu); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Input tidak valid"})
+	}
+	if err := database.DB.Save(&menu).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to update menu"})
+	}
+	return c.JSON(fiber.Map{"message": "Menu updated", "data": menu})
 }
 
 // DeleteMenuAPI deletes a menu link

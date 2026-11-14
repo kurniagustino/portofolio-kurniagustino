@@ -113,6 +113,7 @@ type SiteSetting struct {
 	LinkedInLink string
 	EmailLink    string
 	WhatsAppLink string // nomor format https://wa.me/628xxxx
+	Theme        string `gorm:"size:20;default:'dark'"` // dark | light
 }
 
 func (SiteSetting) TableName() string {

@@ -9,163 +9,167 @@
     <link rel="canonical" href="{{ .Canonical }}">
     <meta property="og:type" content="article">
     <meta property="og:locale" content="id_ID">
-    <meta property="og:title" content="{{ if .Post.Title }}{{ .Post.Title }} — {{ end }}{{ if .Settings.SiteTitle }}{{ .Settings.SiteTitle }}{{ else }}Portfolio{{ end }}">
+    <meta property="og:title" content="{{ if .Post.Title }}{{ .Post.Title }}{{ end }}">
     {{ if .Excerpt }}<meta property="og:description" content="{{ .Excerpt }}">{{ end }}
     <meta property="og:url" content="{{ .Canonical }}">
     {{ if .OGImage }}<meta property="og:image" content="{{ .OGImage }}">{{ end }}
-    <meta name="twitter:card" content="{{ if .OGImage }}summary_large_image{{ else }}summary{{ end }}">
-    <meta name="twitter:title" content="{{ if .Post.Title }}{{ .Post.Title }}{{ end }}">
-    {{ if .Excerpt }}<meta name="twitter:description" content="{{ .Excerpt }}">{{ end }}
-    {{ if .OGImage }}<meta name="twitter:image" content="{{ .OGImage }}">{{ end }}
     {{ if .Schema }}<script type="application/ld+json">{{ .Schema }}</script>{{ end }}
-    <script>document.documentElement.classList.add('js');</script>
+    <script>
+      (function() {
+        document.documentElement.classList.add('js');
+        var defaultTheme = '{{ if and .Settings .Settings.Theme }}{{ .Settings.Theme }}{{ else }}dark{{ end }}';
+        var t = localStorage.getItem('theme') || defaultTheme;
+        if (t === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-      :root { --glass-bg: rgba(255,255,255,0.6); --glass-border: rgba(226,232,240,0.6); }
-      .dark { --glass-bg: rgba(15,23,42,0.4); --glass-border: rgba(51,65,85,0.3); }
+      :root { --glass-bg: rgba(255,255,255,0.65); --glass-border: rgba(226,232,240,0.6); }
+      .dark { --glass-bg: rgba(15,23,42,0.45); --glass-border: rgba(51,65,85,0.35); }
       .glass-card { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); }
-      .glass-nav { background: rgba(248,250,252,0.7); backdrop-filter: blur(20px); }
-      .dark .glass-nav { background: rgba(2,6,23,0.7); }
+      .glass-nav { background: rgba(248,250,252,0.75); backdrop-filter: blur(20px); }
+      .dark .glass-nav { background: rgba(2,6,23,0.75); }
       .bg-grid-slate-100 {
         background-size: 40px 40px;
         background-image: linear-gradient(to right, rgba(241,245,249,0.5) 1px, transparent 1px),
                           linear-gradient(to bottom, rgba(241,245,249,0.5) 1px, transparent 1px);
       }
       .dark .bg-grid-slate-100 {
-        background-size: 40px 40px;
         background-image: linear-gradient(to right, rgba(30,41,59,0.5) 1px, transparent 1px),
                           linear-gradient(to bottom, rgba(30,41,59,0.5) 1px, transparent 1px);
       }
       .fade-up { animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both; }
-      @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-
-      /* Konten artikel */
-      .prose-body { line-height: 1.8; font-size: 1.05rem; color: #475569; }
-      .dark .prose-body { color: #94a3b8; }
-      .prose-body h1, .prose-body h2, .prose-body h3, .prose-body h4 { color: #0f172a; font-weight: 700; margin: 1.8em 0 0.6em; line-height: 1.3; }
-      .dark .prose-body h1, .dark .prose-body h2, .dark .prose-body h3, .dark .prose-body h4 { color: #f1f5f9; }
-      .prose-body h2 { font-size: 1.5rem; }
-      .prose-body h3 { font-size: 1.2rem; }
-      .prose-body p { margin: 1em 0; }
-      .prose-body a { color: #0891b2; text-decoration: underline; text-underline-offset: 3px; }
-      .prose-body ul, .prose-body ol { margin: 1em 0; padding-left: 1.4em; }
-      .prose-body ul { list-style: disc; }
-      .prose-body ol { list-style: decimal; }
-      .prose-body li { margin: 0.4em 0; }
-      .prose-body pre { background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: 10px; overflow-x: auto; font-size: 0.9rem; margin: 1.2em 0; }
-      .prose-body code { font-family: 'Fira Code', monospace; font-size: 0.9em; background: rgba(100,116,139,0.15); padding: 0.15em 0.4em; border-radius: 5px; }
-      .prose-body pre code { background: transparent; padding: 0; }
-      .prose-body blockquote { border-left: 3px solid #06b6d4; padding-left: 1rem; margin: 1.4em 0; color: #64748b; font-style: italic; }
-      .prose-body img { border-radius: 12px; margin: 1.4em 0; max-width: 100%; }
-      .prose-body hr { border: 0; border-top: 1px solid rgba(100,116,139,0.25); margin: 2em 0; }
-
-      @media (prefers-reduced-motion: reduce) { .fade-up { animation: none; } }
-    
-      /* Progres baca di bawah navbar; .fade-up ditahan lalu dilepas saat masuk layar */
+      @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
       #scroll-progress { position: absolute; left: 0; bottom: -1px; height: 2px; width: 0%;
         background: linear-gradient(to right, #06b6d4, #3b82f6, #6366f1); pointer-events: none; }
       .js .fade-up { animation-play-state: paused; }
-      @media print { .fade-up { animation: none !important; } }
+      .prose-body { line-height: 1.85; font-size: 1.05rem; color: #475569; }
+      .dark .prose-body { color: #94a3b8; }
+      .prose-body h1, .prose-body h2, .prose-body h3, .prose-body h4 { color: #0f172a; font-weight: 700; margin: 1.8em 0 0.6em; line-height: 1.3; }
+      .dark .prose-body h1, .dark .prose-body h2, .dark .prose-body h3, .dark .prose-body h4 { color: #f1f5f9; }
+      .prose-body h2 { font-size: 1.5rem; border-left: 3px solid #06b6d4; padding-left: 0.75rem; }
+      .prose-body h3 { font-size: 1.2rem; }
+      .prose-body p { margin: 1.1em 0; }
+      .prose-body a { color: #0891b2; text-decoration: underline; text-underline-offset: 3px; }
+      .prose-body ul, .prose-body ol { margin: 1em 0; padding-left: 1.4em; }
+      .prose-body ul { list-style: disc; } .prose-body ol { list-style: decimal; }
+      .prose-body li { margin: 0.45em 0; }
+      .prose-body pre { background: #0b1220; color: #e2e8f0; padding: 1rem 1.1rem; border-radius: 12px; overflow-x: auto; font-size: 0.9rem; margin: 1.3em 0; border: 1px solid rgba(51,65,85,0.5); }
+      .prose-body code { font-family: 'Fira Code', monospace; font-size: 0.9em; background: rgba(100,116,139,0.15); padding: 0.15em 0.4em; border-radius: 5px; }
+      .prose-body pre code { background: transparent; padding: 0; }
+      .prose-body blockquote { border-left: 3px solid #06b6d4; padding: 0.2rem 0 0.2rem 1rem; margin: 1.4em 0; color: #64748b; font-style: italic; background: rgba(6,182,212,0.04); border-radius: 0 8px 8px 0; }
+      .prose-body img { border-radius: 12px; margin: 1.4em 0; max-width: 100%; }
+      .prose-body hr { border: 0; border-top: 1px solid rgba(100,116,139,0.25); margin: 2em 0; }
+      @media (prefers-reduced-motion: reduce) { .fade-up { animation: none !important; } }
     </style>
-    {{ if .Settings.Favicon }}
-    <link rel="icon" href="{{ .Settings.Favicon }}" type="image/x-icon">
-    {{ else }}
-    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%23020617%27/%3E%3Ctext%20x%3D%2732%27%20y%3D%2744%27%20font-family%3D%27ui-monospace%2Cmonospace%27%20font-size%3D%2726%27%20font-weight%3D%27700%27%20text-anchor%3D%27middle%27%20fill%3D%27%2306b6d4%27%3E%26lt%3B/%26gt%3B%3C/text%3E%3C/svg%3E" type="image/svg+xml">
-    {{ end }}
-  <link rel="stylesheet" href="/static/css/tailwind.css">
+    {{ if .Settings.Favicon }}<link rel="icon" href="{{ .Settings.Favicon }}" type="image/x-icon">{{ end }}
+    <link rel="stylesheet" href="/static/css/tailwind.css">
   </head>
   <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased selection:bg-accent-cyan selection:text-white overflow-x-hidden">
     <div class="fixed inset-0 z-[-1] bg-grid-slate-100 [mask-image:linear-gradient(to_bottom,white,transparent)]"></div>
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+      <div class="absolute -top-[15%] left-[10%] w-[40%] h-[40%] bg-accent-cyan/10 dark:bg-accent-cyan/[0.04] rounded-full blur-[120px]"></div>
+    </div>
 
     <nav class="fixed top-0 left-0 right-0 z-50 glass-nav border-b border-slate-200 dark:border-slate-800">
       <div id="scroll-progress" aria-hidden="true"></div>
-      <div class="max-w-3xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
-        <a href="/" class="text-xl font-black tracking-tight font-mono flex items-center gap-1">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <a href="/" class="text-lg font-black tracking-tight font-mono flex items-center gap-1 shrink-0">
           <span class="text-accent-cyan">&lt;</span><span class="dark:text-white text-slate-900">Kurnia</span><span class="text-accent-cyan">/&gt;</span>
         </a>
-        <div class="flex items-center gap-1">
-          <a href="/blog" class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-accent-cyan px-3 py-2 transition-colors">← Semua Tulisan</a>
+        <div class="flex items-center gap-1 sm:gap-2">
+          <a href="/" class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-accent-cyan px-3 py-2 rounded-lg transition-colors">Portfolio</a>
+          <a href="/resume" class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-accent-cyan px-3 py-2 rounded-lg transition-colors">Resume</a>
+          <a href="/blog" class="text-sm font-medium text-accent-cyan px-3 py-2 rounded-lg bg-accent-cyan/10 border border-accent-cyan/20">Blog</a>
+          <div class="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1 hidden sm:block"></div>
+          <button id="theme-toggle" class="w-9 h-9 rounded-lg glass-card flex items-center justify-center hover:border-accent-cyan/50 transition-all" aria-label="Toggle tema">
+            <svg class="w-4 h-4 text-slate-600 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
+            <svg class="w-4 h-4 text-slate-300 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          </button>
         </div>
       </div>
     </nav>
 
-    <main class="pt-32 pb-24 px-4">
+    <main class="pt-28 pb-24 px-4">
       <article class="max-w-3xl mx-auto">
-
         {{ if .NotFound }}
-        <div class="fade-up glass-card rounded-xl p-12 text-center border-t border-t-accent-cyan/50">
+        <div class="fade-up glass-card rounded-2xl p-12 text-center border-t-2 border-t-accent-cyan/50">
           <p class="font-mono text-accent-cyan text-sm mb-3">ERROR_404</p>
           <h1 class="text-3xl font-black text-slate-800 dark:text-white mb-4">Tulisan Tidak Ditemukan</h1>
-          <a href="/blog" class="text-accent-cyan font-semibold hover:underline">Kembali ke daftar tulisan</a>
+          <p class="text-slate-500 dark:text-slate-400 mb-6">Artikel yang kamu cari tidak tersedia.</p>
+          <a href="/blog" class="inline-flex px-5 py-2.5 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold text-sm">Kembali ke Blog</a>
         </div>
         {{ else }}
-
         <header class="fade-up mb-10">
+          <a href="/blog" class="inline-flex items-center gap-1 text-xs font-mono text-slate-500 hover:text-accent-cyan mb-6 transition-colors">← semua tulisan</a>
           <div class="flex flex-wrap items-center gap-3 mb-4">
-            <span class="font-mono text-[10px] uppercase tracking-widest text-accent-cyan px-2 py-1 rounded border border-accent-cyan/40">{{ .Post.Category }}</span>
+            <span class="font-mono text-[10px] uppercase tracking-widest text-accent-cyan px-2 py-1 rounded bg-accent-cyan/10 border border-accent-cyan/20">{{ .Post.Category }}</span>
             <span class="font-mono text-[11px] text-slate-400">{{ .Post.CreatedAt.Format "02 January 2006" }}</span>
           </div>
           <h1 class="text-3xl md:text-5xl font-black tracking-tight leading-tight text-slate-800 dark:text-white">{{ .Post.Title }}</h1>
         </header>
 
         {{ if .Post.Image }}
-        <div class="fade-up mb-10 rounded-xl overflow-hidden glass-card p-2" style="animation-delay:.05s">
-          <img src="{{ .Post.Image }}" alt="{{ .Post.Title }}" class="w-full h-auto max-h-[420px] object-cover rounded-lg">
+        <div class="fade-up mb-10 rounded-2xl overflow-hidden glass-card p-2" style="animation-delay:.05s">
+          <img src="{{ .Post.Image }}" alt="{{ .Post.Title }}" class="w-full h-auto max-h-[440px] object-cover rounded-xl">
         </div>
         {{ end }}
 
-        <div class="fade-up prose-body" style="animation-delay:.1s">
-          {{ .Content }}
+        <div class="fade-up glass-card rounded-2xl p-6 md:p-10" style="animation-delay:.1s">
+          <div class="prose-body">{{ .Content }}</div>
         </div>
 
-        <div class="mt-14 pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-wrap justify-between gap-4 fade-up">
+        <div class="mt-10 flex flex-wrap justify-between items-center gap-4 fade-up glass-card rounded-xl p-5">
           <a href="/blog" class="text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-accent-cyan transition-colors">← Semua Tulisan</a>
-          <a href="/#contact" class="text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-accent-cyan transition-colors">Diskusikan topik ini →</a>
+          <a href="/#contact" class="text-sm font-bold text-accent-cyan hover:underline">Diskusikan topik ini →</a>
         </div>
-
         {{ end }}
       </article>
     </main>
 
     <footer class="py-8 border-t border-slate-200 dark:border-slate-800/50">
-      <div class="max-w-3xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+      <div class="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-3">
         <p class="text-slate-500 font-mono text-xs">{{ .Settings.FooterText }}</p>
-        <a href="/" class="font-mono text-xs text-accent-cyan hover:underline">&lt;Kurnia /&gt;</a>
+        <a href="/" class="font-mono text-xs text-accent-cyan hover:underline">Kembali ke portfolio</a>
       </div>
     </footer>
-      <script>
-      // Konten .fade-up beranimasi saat masuk layar (bukan saat load),
-      // plus bar progres baca. prefers-reduced-motion ditangani oleh CSS.
+    <script>
       (function () {
+        document.getElementById('theme-toggle')?.addEventListener('click', function() {
+          document.documentElement.classList.toggle('dark');
+          var newTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+          localStorage.setItem('theme', newTheme);
+        });
+        window.addEventListener('storage', function(e) {
+          if (e.key === 'theme' && e.newValue) {
+            if (e.newValue === 'dark') document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+          }
+        });
         var items = document.querySelectorAll('.fade-up');
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) {
           items.forEach(function (el) { el.style.animationPlayState = 'running'; });
         } else {
           var io = new IntersectionObserver(function (entries) {
-            entries.forEach(function (e) {
-              if (e.isIntersecting) {
-                e.target.style.animationPlayState = 'running';
-                io.unobserve(e.target);
-              }
-            });
+            entries.forEach(function (e) { if (e.isIntersecting) { e.target.style.animationPlayState = 'running'; io.unobserve(e.target); } });
           }, { rootMargin: '0px 0px -40px 0px', threshold: 0.05 });
           items.forEach(function (el) { io.observe(el); });
         }
-
         var bar = document.getElementById('scroll-progress');
         if (bar) {
           var ticking = false;
           var update = function () {
-            var doc = document.documentElement;
-            var max = doc.scrollHeight - doc.clientHeight;
+            var doc = document.documentElement, max = doc.scrollHeight - doc.clientHeight;
             bar.style.width = (max > 0 ? (doc.scrollTop / max) * 100 : 0) + '%';
             ticking = false;
           };
-          window.addEventListener('scroll', function () {
-            if (!ticking) { ticking = true; requestAnimationFrame(update); }
-          }, { passive: true });
+          window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
           update();
         }
       })();

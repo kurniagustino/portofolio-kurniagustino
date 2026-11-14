@@ -41,7 +41,7 @@ func main() {
 	app.Use("/public", filesystem.New(filesystem.Config{
 		Root:       http.FS(publicFS),
 		PathPrefix: "public",
-		Browse:     true,
+		Browse:     false, // matikan directory listing
 	}))
 	app.Static("/media", "./media")
 	app.Static("/static", "./static")
@@ -87,6 +87,9 @@ func main() {
 	admin.Delete("/api/projects/:id", handlers.AdminDeleteProject)
 	admin.Delete("/api/projects/image/:id", handlers.AdminDeleteProjectImage)
 
+	// Media upload (gambar project, blog, settings)
+	admin.Post("/api/upload", handlers.UploadMediaAPI)
+
 	// Settings API
 	admin.Get("/api/settings", handlers.GetSettingsAPI)
 	admin.Put("/api/settings", handlers.UpdateSettingsAPI)
@@ -94,6 +97,7 @@ func main() {
 	// Menus API
 	admin.Get("/api/menus", handlers.GetMenusAPI)
 	admin.Post("/api/menus", handlers.CreateMenuAPI)
+	admin.Put("/api/menus/:id", handlers.UpdateMenuAPI)
 	admin.Delete("/api/menus/:id", handlers.DeleteMenuAPI)
 
 	// Pengalaman kerja
