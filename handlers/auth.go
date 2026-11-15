@@ -36,8 +36,10 @@ func LoginUI(c *fiber.Ctx) error {
 // AdminUI merender halaman admin dashboard
 func AdminUI(c *fiber.Ctx) error {
 	s := GetSettings()
+	csrfToken, _ := c.Locals("csrf").(string)
 	return c.Render("admin", fiber.Map{
-		"Settings": s,
+		"Settings":  s,
+		"CSRFToken": csrfToken,
 	})
 }
 

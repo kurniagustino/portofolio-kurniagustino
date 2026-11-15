@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/csrf"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
@@ -90,7 +91,14 @@ func main() {
 	app.Get("/logout", handlers.LogoutAPI)
 
 	// Admin API & UI Routes (Protected)
-	admin := app.Group("/admin", handlers.AuthMiddleware)
+	admin := app.Group("/admin", handlers.AuthMiddleware, csrf.New(csrf.Config{
+		KeyLookup:      "header:X-Csrf-Token",
+		CookieName:     "csrf_",
+		CookieSameSite: "Strict",
+		CookieSecure:   true,
+		CookieHTTPOnly: true,
+		ContextKey:     "csrf",
+	}))
 	admin.Get("/", handlers.AdminUI)
 	admin.Get("/api/projects", handlers.AdminListProjects)
 	admin.Post("/api/projects", handlers.AdminCreateProject)
@@ -131,8 +139,8 @@ func main() {
 
 	// Blog
 	admin.Get("/api/posts", handlers.List[models.BlogPost]("created_at desc"))
-	admin.Post("/api/posts", handlers.Create[models.BlogPost]())
-	admin.Put("/api/posts/:id", handlers.Update[models.BlogPost]())
+	admin.Post("/api/posts", handlers.AdminCreatePost)
+	admin.Put("/api/posts/:id", handlers.AdminUpdatePost)
 	admin.Delete("/api/posts/:id", handlers.Delete[models.BlogPost]())
 
 	// Pesan masuk

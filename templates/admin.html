@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ .CSRFToken }}">
     <title>Admin Dashboard — {{ if and .Settings .Settings.SiteTitle }}{{ .Settings.SiteTitle }}{{ else }}Portfolio{{ end }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
@@ -805,6 +806,32 @@
     </div>
 
     <script>
+    // ============================================================
+    // CSRF: sisipkan token otomatis untuk request state-changing ke /admin
+    // ============================================================
+    (function() {
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        var csrfToken = meta ? meta.getAttribute('content') : '';
+        var _fetch = window.fetch.bind(window);
+        window.fetch = function(input, init) {
+            init = init || {};
+            var url = (typeof input === 'string') ? input : (input && input.url) || '';
+            var method = (init.method || (typeof input === 'object' && input.method) || 'GET').toUpperCase();
+            var isAdmin = url.indexOf('/admin') === 0 || url.indexOf('/admin') > -1 && url.indexOf(location.origin + '/admin') === 0;
+            if (isAdmin && method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS' && csrfToken) {
+                if (init.headers instanceof Headers) {
+                    if (!init.headers.has('X-Csrf-Token')) init.headers.set('X-Csrf-Token', csrfToken);
+                } else {
+                    init.headers = Object.assign({}, init.headers || {});
+                    var hasToken = false;
+                    for (var k in init.headers) { if (k.toLowerCase() === 'x-csrf-token') hasToken = true; }
+                    if (!hasToken) init.headers['X-Csrf-Token'] = csrfToken;
+                }
+            }
+            return _fetch(input, init);
+        };
+    })();
+
     // ============================================================
     // UTILITIES
     // ============================================================

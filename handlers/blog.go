@@ -106,3 +106,32 @@ func excerpt(html string, max int) string {
 	}
 	return cut + "…"
 }
+
+// AdminCreatePost membuat post blog baru dengan sanitasi konten HTML.
+func AdminCreatePost(c *fiber.Ctx) error {
+	var post models.BlogPost
+	if err := c.BodyParser(&post); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Input tidak valid"})
+	}
+	post.Content = blogSanitizePolicy().Sanitize(post.Content)
+	if err := database.DB.Create(&post).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Gagal menyimpan data"})
+	}
+	return c.JSON(fiber.Map{"message": "Berhasil disimpan", "data": post})
+}
+
+// AdminUpdatePost memperbarui post blog dengan sanitasi konten HTML.
+func AdminUpdatePost(c *fiber.Ctx) error {
+	var post models.BlogPost
+	if err := database.DB.First(&post, c.Params("id")).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{"error": "Data tidak ditemukan"})
+	}
+	if err := c.BodyParser(&post); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Input tidak valid"})
+	}
+	post.Content = blogSanitizePolicy().Sanitize(post.Content)
+	if err := database.DB.Save(&post).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Gagal menyimpan perubahan"})
+	}
+	return c.JSON(fiber.Map{"message": "Berhasil diperbarui", "data": post})
+}
