@@ -634,8 +634,13 @@
                                 <img id="profilePreview" class="profile-preview" src="" alt="preview">
                             </div>
                             <div class="form-group">
-                                <label>CV / Resume (URL file)</label>
-                                <input type="text" name="CVLink" id="CVLink" class="form-control" placeholder="/public/cv.pdf">
+                                <label>CV / Resume (upload PDF atau URL file)</label>
+                                <input type="text" name="CVLink" id="CVLink" class="form-control" placeholder="/public/cv.pdf atau /media/cv.pdf">
+                                <div class="upload-area" style="margin-top:0.5rem;" onclick="triggerUpload('cvFile', 'CVLink')">
+                                    <input type="file" id="cvFile" accept="application/pdf" style="display:none;" onchange="uploadAndFill(this, 'CVLink')">
+                                    <p>📄 Klik untuk upload CV (PDF)</p>
+                                    <p class="upload-hint">PDF · maks 5 MB</p>
+                                </div>
                             </div>
 
                             <div class="section-divider" style="margin-top:2rem;">Hero Section</div>
@@ -772,7 +777,7 @@
                     <div class="upload-area">
                         <input type="file" name="images" multiple accept="image/jpeg,image/png,image/gif,image/webp">
                         <p>🖼 Klik atau seret gambar ke sini</p>
-                        <p class="upload-hint">JPG/PNG/WebP/GIF · maks 5 MB per file · bisa pilih banyak</p>
+                        <p class="upload-hint">JPG/PNG/WebP/GIF · maks 5 MB per file · bisa pilih banyak (khusus gambar)</p>
                     </div>
                     <div id="projectImages" class="img-preview-grid"></div>
                 </div>

@@ -6,10 +6,24 @@ import (
 	"portfolio_kurnia/models"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/microcosm-cc/bluemonday"
 )
+
+var (
+	ugcPolicyOnce sync.Once
+	ugcPolicy     *bluemonday.Policy
+)
+
+func blogSanitizePolicy() *bluemonday.Policy {
+	ugcPolicyOnce.Do(func() {
+		ugcPolicy = bluemonday.UGCPolicy()
+	})
+	return ugcPolicy
+}
 
 var (
 	tagRegex   = regexp.MustCompile(`<[^>]*>`)
@@ -49,9 +63,10 @@ func BlogDetail(c *fiber.Ctx) error {
 
 	s := GetSettings()
 	desc := excerpt(post.Content, 160)
+	safeContent := blogSanitizePolicy().Sanitize(post.Content)
 	data := fiber.Map{
 		"Post":     post,
-		"Content":  template.HTML(post.Content),
+		"Content":  template.HTML(safeContent),
 		"Excerpt":  desc,
 		"Settings": s,
 		"NotFound": false,
