@@ -18,14 +18,9 @@ var (
 )
 
 // jwtSecret mengambil secret JWT dari env JWT_SECRET.
-// Nilai lama dipakai sebagai fallback agar tidak ada yang terkunci keluar
-// bila env belum diatur — tetap disarankan mengatur JWT_SECRET di .env.
 func jwtSecret() string {
 	jwtSecretOnce.Do(func() {
 		jwtSecretVal = os.Getenv("JWT_SECRET")
-		if jwtSecretVal == "" {
-			jwtSecretVal = "RAHASIA_NEGARA_SANGAT_AMAN"
-		}
 	})
 	return jwtSecretVal
 }

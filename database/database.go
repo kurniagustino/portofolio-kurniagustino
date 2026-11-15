@@ -45,8 +45,9 @@ func Connect() {
 	fmt.Println("Database migrated")
 
 	backfillProjectSlugs()
-	SeedProjectsIfEmpty()
-	SeedExperienceIfEmpty()
+	// Seeder dinonaktifkan: isi data manual dari database.
+	// SeedProjectsIfEmpty()
+	// SeedExperienceIfEmpty()
 }
 
 // backfillProjectSlugs mengisi slug kosong pada data project lama

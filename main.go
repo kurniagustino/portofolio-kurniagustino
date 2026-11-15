@@ -12,7 +12,9 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
+	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/template/html/v2"
 )
 
@@ -20,7 +22,7 @@ func main() {
 	database.Connect()
 
 	if os.Getenv("JWT_SECRET") == "" {
-		log.Println("PERINGATAN: JWT_SECRET belum diatur di .env — memakai nilai default. Atur JWT_SECRET untuk keamanan produksi.")
+		log.Fatal("JWT_SECRET belum diatur. Set environment variable JWT_SECRET sebelum menjalankan server.")
 	}
 	if os.Getenv("SITE_URL") == "" {
 		log.Println("Info: SITE_URL belum diatur — canonical URL & sitemap memakai alamat request. Disarankan mengatur SITE_URL=https://domainanda.com")
@@ -36,6 +38,15 @@ func main() {
 		ProxyHeader:        "X-Forwarded-For",
 		EnableIPValidation: true,
 	})
+
+	// Hardening: recover dari panic + security headers dasar
+	app.Use(recover.New())
+	app.Use(helmet.New(helmet.Config{
+		XSSProtection:      "1; mode=block",
+		ContentTypeNosniff: "nosniff",
+		XFrameOptions:      "SAMEORIGIN",
+		ReferrerPolicy:     "strict-origin-when-cross-origin",
+	}))
 
 	// Serve static and media files
 	app.Use("/public", filesystem.New(filesystem.Config{
@@ -147,5 +158,7 @@ func main() {
 	})
 
 	log.Printf("Starting server on port %s", port)
-	app.Listen(":" + port)
+	if err := app.Listen(":" + port); err != nil {
+		log.Fatal(err)
+	}
 }
