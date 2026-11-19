@@ -23,8 +23,9 @@
             --bg: #f8fafc;
             --surface: #ffffff;
             --surface-light: #f1f5f9;
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
+            --primary: #0f172a;
+            --primary-hover: #1e293b;
+            --accent: #06b6d4;
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
@@ -41,8 +42,9 @@
             --bg: #0b0f17;
             --surface: #131b26;
             --surface-light: #1b2636;
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
+            --primary: #e2e8f0;
+            --primary-hover: #f8fafc;
+            --accent: #22d3ee;
             --text: #f8fafc;
             --text-muted: #94a3b8;
             --border: #243042;
@@ -53,6 +55,13 @@
         }
 
         * { box-sizing: border-box; }
+
+        @media (max-width: 900px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 560px) {
+            .form-grid { grid-template-columns: 1fr !important; }
+        }
 
         body {
             font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -80,6 +89,18 @@
         }
 
         .navbar-left { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+        .brand-mark {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            background: var(--text);
+            color: var(--bg);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Fira Code', ui-monospace, monospace;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            flex-shrink: 0;
+        }
         .navbar h2 {
             margin: 0;
             font-weight: 700;
@@ -111,7 +132,10 @@
         }
         .btn:hover { background: var(--primary-hover); }
         .btn:active { transform: scale(0.98); }
+        html.dark .btn:not(.btn-danger):not(.btn-outline) { color: #0f172a; }
+        html.dark .btn-danger { color: white; }
         .btn-danger { background: var(--danger); color: white; }
+        .icn { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
         .btn-danger:hover { background: #dc2626; }
         .btn-outline {
             background: transparent;
@@ -235,6 +259,94 @@
         .badge-new { background: var(--primary); color: white; }
         .badge-read { background: var(--surface-light); color: var(--text-muted); }
 
+        /* Tab badge (jumlah pesan belum dibaca) */
+        .tab-badge {
+            background: var(--danger);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            border-radius: 99px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tab-badge:empty { display: none; }
+
+        /* Stats cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.15rem;
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.15s ease, border-color 0.15s ease;
+            cursor: pointer;
+        }
+        .stat-card:hover { transform: translateY(-2px); border-color: var(--primary); }
+        .stat-icon {
+            width: 40px; height: 40px;
+            border-radius: 9px;
+            border: 1px solid var(--border);
+            background: var(--surface-light);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+        .stat-icon .icn { width: 18px; height: 18px; }
+        .stat-card:hover .stat-icon { color: var(--accent); border-color: var(--accent); }
+        .stat-info { min-width: 0; }
+        .stat-value {
+            font-size: 1.35rem;
+            font-weight: 700;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Form 2 kolom di modal lebar */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0 1rem;
+        }
+        .form-grid .form-group.full { grid-column: 1 / -1; }
+
+        /* Skeleton loading */
+        @keyframes shimmer {
+            0% { background-position: -400px 0; }
+            100% { background-position: 400px 0; }
+        }
+        .skeleton {
+            display: block;
+            height: 14px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, var(--surface-light) 25%, var(--border) 50%, var(--surface-light) 75%);
+            background-size: 800px 100%;
+            animation: shimmer 1.2s linear infinite;
+            margin-bottom: 0.55rem;
+        }
+        .skeleton:last-child { margin-bottom: 0; }
+        @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+
         /* Modal */
         .modal-overlay {
             position: fixed;
@@ -266,6 +378,17 @@
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.4);
+        }
+        .modal.wide { max-width: 760px; }
+        .modal.wide .form-grid { grid-template-columns: 1fr 1fr; gap: 0 1rem; }
+        .form-control + small {
+            display: block;
+            margin-top: 4px;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+        @media (max-width: 560px) {
+            .modal.wide .form-grid { grid-template-columns: 1fr; }
         }
         .modal-overlay.active .modal { transform: translateY(0); }
         .modal h2 { margin: 0 0 1.25rem; font-size: 1.15rem; font-weight: 700; }
@@ -434,19 +557,20 @@
 
     <nav class="navbar">
         <div class="navbar-left">
-            <h2>⚙️ Dashboard Admin</h2>
+            <div class="brand-mark" aria-hidden="true">&lt;K/&gt;</div>
+            <h2>Dashboard Admin</h2>
         </div>
         <div class="navbar-actions">
             <button id="themeToggleBtn" class="btn btn-outline btn-sm" type="button" aria-label="Ganti tema" title="Ganti Mode Gelap / Terang">
-                <span id="themeToggleIcon">🌙</span>
+                <svg class="icn" id="themeToggleIcon" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/></svg>
                 <span class="btn-text" id="themeToggleText">Mode</span>
             </button>
             <a class="btn btn-outline btn-sm" href="/" target="_blank" title="Buka website portfolio di tab baru">
-                <span>🌐</span>
+                <svg class="icn" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 15h10"/></svg>
                 <span class="btn-text">Lihat Web</span>
             </a>
             <button class="btn btn-outline btn-sm" onclick="window.location.href='/logout'" title="Keluar">
-                <span>🚪</span>
+                <svg class="icn" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
                 <span class="btn-text">Logout</span>
             </button>
         </div>
@@ -455,21 +579,53 @@
     <div class="container">
 
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('projects', this)">🗂 Projects</button>
-            <button class="tab-btn" onclick="switchTab('messages', this)">✉️ Pesan</button>
-            <button class="tab-btn" onclick="switchTab('experiences', this)">💼 Pengalaman</button>
-            <button class="tab-btn" onclick="switchTab('credentials', this)">🎓 Pendidikan</button>
-            <button class="tab-btn" onclick="switchTab('testimonials', this)">💬 Testimoni</button>
-            <button class="tab-btn" onclick="switchTab('posts', this)">📝 Blog</button>
-            <button class="tab-btn" onclick="switchTab('menus', this)">🔗 Navigasi</button>
-            <button class="tab-btn" onclick="switchTab('settings', this)">🏠 Site Settings</button>
+            <button class="tab-btn active" onclick="switchTab('projects', this)"><svg class="icn" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>Projects</button>
+            <button class="tab-btn" onclick="switchTab('messages', this)"><svg class="icn" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Pesan <span class="tab-badge" id="msgTabBadge"></span></button>
+            <button class="tab-btn" onclick="switchTab('experiences', this)"><svg class="icn" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/></svg>Pengalaman</button>
+            <button class="tab-btn" onclick="switchTab('credentials', this)"><svg class="icn" viewBox="0 0 24 24"><path d="M12 3 2 8l10 5 10-5-10-5z"/><path d="M6 10.5V15c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/></svg>Pendidikan</button>
+            <button class="tab-btn" onclick="switchTab('testimonials', this)"><svg class="icn" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H4l2.5-2.5A8 8 0 1 1 21 12z"/></svg>Testimoni</button>
+            <button class="tab-btn" onclick="switchTab('posts', this)"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Blog</button>
+            <button class="tab-btn" onclick="switchTab('menus', this)"><svg class="icn" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>Navigasi</button>
+            <button class="tab-btn" onclick="switchTab('settings', this)"><svg class="icn" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>Site Settings</button>
+        </div>
+
+        <!-- STATS OVERVIEW -->
+        <div class="stats-grid">
+            <div class="stat-card" onclick="switchTab('projects', null)" title="Kelola proyek">
+                <div class="stat-icon"><svg class="icn" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="statProjects">{{ .Stats.Projects }}</div>
+                    <div class="stat-label">Proyek</div>
+                </div>
+            </div>
+            <div class="stat-card" onclick="switchTab('posts', null)" title="Kelola tulisan blog">
+                <div class="stat-icon"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="statPosts">{{ .Stats.Posts }}</div>
+                    <div class="stat-label">Tulisan</div>
+                </div>
+            </div>
+            <div class="stat-card" onclick="switchTab('messages', null)" title="Pesan masuk">
+                <div class="stat-icon"><svg class="icn" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="statMessages">{{ .Stats.Messages }}</div>
+                    <div class="stat-label">Pesan</div>
+                </div>
+            </div>
+            <div class="stat-card" onclick="switchTab('messages', null)" title="Pesan belum dibaca">
+                <div class="stat-icon"><svg class="icn" viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="statUnread">{{ .Stats.Unread }}</div>
+                    <div class="stat-label">Belum Dibaca</div>
+                </div>
+            </div>
         </div>
 
         <!-- PROJECTS TAB -->
         <div id="projects" class="tab-content active">
             <div class="header-actions">
                 <h2>Manage Projects</h2>
-                <button class="btn" onclick="openProjectModal()">+ Tambah Project</button>
+                <button class="btn" onclick="openProjectModal()"><svg class="icn" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Tambah Project</button>
             </div>
             <div class="card" style="padding: 0;">
                 <div class="table-responsive">
@@ -485,7 +641,11 @@
                             </tr>
                         </thead>
                         <tbody id="projectTableBody">
-                            <tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Loading...</td></tr>
+                            <tr><td colspan="6" style="padding:1rem;">
+                                <span class="skeleton" style="width:90%;"></span>
+                                <span class="skeleton" style="width:75%;"></span>
+                                <span class="skeleton" style="width:60%;"></span>
+                            </td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -498,20 +658,20 @@
                 <h2>Pesan Masuk</h2>
                 <button class="btn btn-outline" onclick="fetchMessages()">↻ Muat Ulang</button>
             </div>
-            <div id="messageList" class="card">Loading...</div>
+            <div id="messageList" class="card"><span class="skeleton" style="width:85%;"></span><span class="skeleton" style="width:65%;"></span></div>
         </div>
 
         <!-- EXPERIENCES TAB -->
         <div id="experiences" class="tab-content">
             <div class="header-actions">
                 <h2>Pengalaman Kerja</h2>
-                <button class="btn" onclick="openCollectionModal('experiences')">+ Tambah</button>
+                <button class="btn" onclick="openCollectionModal('experiences')"><svg class="icn" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Tambah</button>
             </div>
             <div class="card" style="padding: 0;">
                 <div class="table-responsive">
                     <table>
                         <thead><tr id="experiencesHead"></tr></thead>
-                        <tbody id="experiencesBody"><tr><td colspan="99" style="text-align:center; color:var(--text-muted);">Loading...</td></tr></tbody>
+                        <tbody id="experiencesBody"><tr><td colspan="99" style="padding:1rem;"><span class="skeleton" style="width:90%;"></span><span class="skeleton" style="width:70%;"></span></td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -521,13 +681,13 @@
         <div id="credentials" class="tab-content">
             <div class="header-actions">
                 <h2>Pendidikan &amp; Sertifikasi</h2>
-                <button class="btn" onclick="openCollectionModal('credentials')">+ Tambah</button>
+                <button class="btn" onclick="openCollectionModal('credentials')"><svg class="icn" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Tambah</button>
             </div>
             <div class="card" style="padding: 0;">
                 <div class="table-responsive">
                     <table>
                         <thead><tr id="credentialsHead"></tr></thead>
-                        <tbody id="credentialsBody"><tr><td colspan="99" style="text-align:center; color:var(--text-muted);">Loading...</td></tr></tbody>
+                        <tbody id="credentialsBody"><tr><td colspan="99" style="padding:1rem;"><span class="skeleton" style="width:90%;"></span><span class="skeleton" style="width:70%;"></span></td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -537,13 +697,13 @@
         <div id="testimonials" class="tab-content">
             <div class="header-actions">
                 <h2>Testimoni</h2>
-                <button class="btn" onclick="openCollectionModal('testimonials')">+ Tambah</button>
+                <button class="btn" onclick="openCollectionModal('testimonials')"><svg class="icn" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Tambah</button>
             </div>
             <div class="card" style="padding: 0;">
                 <div class="table-responsive">
                     <table>
                         <thead><tr id="testimonialsHead"></tr></thead>
-                        <tbody id="testimonialsBody"><tr><td colspan="99" style="text-align:center; color:var(--text-muted);">Loading...</td></tr></tbody>
+                        <tbody id="testimonialsBody"><tr><td colspan="99" style="padding:1rem;"><span class="skeleton" style="width:90%;"></span><span class="skeleton" style="width:70%;"></span></td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -559,7 +719,7 @@
                 <div class="table-responsive">
                     <table>
                         <thead><tr id="postsHead"></tr></thead>
-                        <tbody id="postsBody"><tr><td colspan="99" style="text-align:center; color:var(--text-muted);">Loading...</td></tr></tbody>
+                        <tbody id="postsBody"><tr><td colspan="99" style="padding:1rem;"><span class="skeleton" style="width:90%;"></span><span class="skeleton" style="width:70%;"></span></td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -569,7 +729,7 @@
         <div id="menus" class="tab-content">
             <div class="header-actions">
                 <h2>Manage Navigasi Menu</h2>
-                <button class="btn" onclick="openMenuModal()">+ Tambah Menu</button>
+                <button class="btn" onclick="openMenuModal()"><svg class="icn" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Tambah Menu</button>
             </div>
             <div class="card" style="padding: 0;">
                 <div class="table-responsive">
@@ -584,7 +744,7 @@
                             </tr>
                         </thead>
                         <tbody id="menuTableBody">
-                            <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Loading...</td></tr>
+                            <tr><td colspan="5" style="padding:1rem;"><span class="skeleton" style="width:80%;"></span></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -604,8 +764,8 @@
                             <div class="form-group">
                                 <label>Tema Bawaan Situs (Dark / Light)</label>
                                 <select name="Theme" id="Theme" class="form-control" onchange="previewThemeChange(this.value)">
-                                    <option value="dark">🌙 Dark Mode (Gelap)</option>
-                                    <option value="light">☀️ Light Mode (Terang)</option>
+                                    <option value="dark">Dark Mode (Gelap)</option>
+                                    <option value="light">Light Mode (Terang)</option>
                                 </select>
                                 <small style="display:block;margin-top:0.35rem;color:var(--text-muted);font-size:0.75rem;">
                                     Menentukan tema default seluruh halaman: Landing page, Detail proyek, Blog, Resume, Login, dan Admin.
@@ -620,7 +780,7 @@
                                 <input type="text" name="Favicon" id="Favicon" class="form-control" placeholder="https://... atau /media/icon.png">
                                 <div class="upload-area" style="margin-top:0.5rem;" onclick="triggerUpload('faviconFile', 'Favicon')">
                                     <input type="file" id="faviconFile" accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;" onchange="uploadAndFill(this, 'Favicon')">
-                                    <p>📎 Klik untuk upload favicon</p>
+                                    <p>Klik untuk upload favicon</p>
                                     <p class="upload-hint">PNG/ICO/WebP · maks 5 MB</p>
                                 </div>
                             </div>
@@ -686,7 +846,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-block" id="saveSettingsBtn">💾 Simpan Settings</button>
+                    <button type="submit" class="btn btn-block" id="saveSettingsBtn">Simpan Settings</button>
                 </form>
             </div>
         </div>
@@ -724,18 +884,15 @@
 
     <!-- Modal: Project -->
     <div class="modal-overlay" id="modalOverlay">
-        <div class="modal">
+        <div class="modal wide">
             <h2 id="modalTitle">Tambah Project</h2>
             <form id="projectForm">
                 <input type="hidden" name="id" id="projectId">
 
-                <div class="form-group">
+                <div class="form-grid">
+                <div class="form-group full">
                     <label>Judul *</label>
                     <input type="text" name="title" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label>Deskripsi *</label>
-                    <textarea name="description" class="form-control" required></textarea>
                 </div>
                 <div class="form-group">
                     <label>Tech Stack</label>
@@ -754,6 +911,15 @@
                     <input type="text" name="role" class="form-control" placeholder="Backend Developer">
                 </div>
                 <div class="form-group">
+                    <label>Urutan tampil</label>
+                    <input type="number" name="order" class="form-control" value="0">
+                    <small>Angka kecil = tampil lebih dulu.</small>
+                </div>
+                <div class="form-group full">
+                    <label>Deskripsi *</label>
+                    <textarea name="description" class="form-control" required></textarea>
+                </div>
+                <div class="form-group">
                     <label>Masalah (studi kasus)</label>
                     <textarea name="problem" class="form-control"></textarea>
                 </div>
@@ -761,7 +927,7 @@
                     <label>Solusi</label>
                     <textarea name="solution" class="form-control"></textarea>
                 </div>
-                <div class="form-group">
+                <div class="form-group full">
                     <label>Hasil / Dampak</label>
                     <textarea name="result" class="form-control"></textarea>
                 </div>
@@ -769,15 +935,12 @@
                     <label>Link (URL demo / repo)</label>
                     <input type="text" name="link" class="form-control" placeholder="https://...">
                 </div>
-                <div class="form-group">
-                    <label>Urutan tampil</label>
-                    <input type="number" name="order" class="form-control" value="0">
                 </div>
                 <div class="form-group">
                     <label>Upload Gambar Project</label>
                     <div class="upload-area">
                         <input type="file" name="images" multiple accept="image/jpeg,image/png,image/gif,image/webp">
-                        <p>🖼 Klik atau seret gambar ke sini</p>
+                        <p>Klik atau seret gambar ke sini</p>
                         <p class="upload-hint">JPG/PNG/WebP/GIF · maks 5 MB per file · bisa pilih banyak (khusus gambar)</p>
                     </div>
                     <div id="projectImages" class="img-preview-grid"></div>
@@ -855,8 +1018,35 @@
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         const target = document.getElementById(tabId);
         if (target) target.classList.add('active');
-        if (btn) btn.classList.add('active');
+        if (btn) {
+            btn.classList.add('active');
+        } else {
+            // Klik dari stat card: aktifkan tombol tab yang sesuai
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                if ((b.getAttribute('onclick') || '').includes("'" + tabId + "'")) b.classList.add('active');
+            });
+        }
     }
+
+    // Refresh angka stat card + badge tab pesan dari API
+    async function refreshStats() {
+        try {
+            const res = await fetch('/admin/api/stats');
+            if (!res.ok) return;
+            const s = await res.json();
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+            set('statProjects', s.projects);
+            set('statPosts', s.posts);
+            set('statMessages', s.messages);
+            set('statUnread', s.unread);
+            const badge = document.getElementById('msgTabBadge');
+            if (badge) badge.textContent = s.unread > 0 ? s.unread : '';
+        } catch (e) { /* network error: biarkan angka terakhir */ }
+    }
+    refreshStats();
+    // ponytail: tanpa polling periodik — TiDB remote lambat (count 1-78 dtk).
+    // Stats sudah di-refresh tiap switch tab / CRUD via fetchProjects dsb.
+    // Upgrade path: WebSocket bila DB pindah lokal & butuh badge real-time.
 
     // Close modal on overlay click
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
@@ -868,16 +1058,22 @@
     // ============================================================
     // THEME MANAGEMENT (Admin Sync)
     // ============================================================
-    function updateThemeUI(theme) {
+    const ICON_SUN = 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z';
+    const ICON_MOON = 'M20.354 15.354A9 9 0 0 1 8.646 3.646 9.003 9.003 0 0 0 12 21a9.003 9.003 0 0 0 8.354-5.646z';
+    function setThemeIcon(isDark) {
         const icon = document.getElementById('themeToggleIcon');
+        const path = icon && icon.querySelector('path');
+        if (path) path.setAttribute('d', isDark ? ICON_SUN : ICON_MOON);
+    }
+    function updateThemeUI(theme) {
         const text = document.getElementById('themeToggleText');
         if (theme === 'dark') {
             document.documentElement.classList.add('dark');
-            if (icon) icon.textContent = '☀️';
+            setThemeIcon(true);
             if (text) text.textContent = 'Terang';
         } else {
             document.documentElement.classList.remove('dark');
-            if (icon) icon.textContent = '🌙';
+            setThemeIcon(false);
             if (text) text.textContent = 'Gelap';
         }
     }
@@ -903,7 +1099,7 @@
                     body: JSON.stringify(data)
                 });
             })
-            .then(() => toast('Tema diubah ke ' + nextTheme + ' (tersimpan ke server) ✓'))
+            .then(() => toast('Tema diubah ke ' + nextTheme + ' (tersimpan ke server)'))
             .catch(() => toast('Tema lokal diubah ke ' + nextTheme));
     }
 
@@ -978,9 +1174,9 @@
                     <td>${p.Order}</td>
                     <td>
                         <div class="td-actions">
-                            <button class="btn btn-outline btn-sm" onclick="openProjectModal(${p.ID})">✏️ Edit</button>
-                            <a class="btn btn-outline btn-sm" href="/projects/${escapeHtml(p.Slug)}" target="_blank" title="Lihat">🔗</a>
-                            <button class="btn btn-danger btn-sm" onclick="deleteProject(${p.ID})" title="Hapus">🗑</button>
+                            <button class="btn btn-outline btn-sm" onclick="openProjectModal(${p.ID})">Edit</button>
+                            <a class="btn btn-outline btn-sm" href="/projects/${escapeHtml(p.Slug)}" target="_blank" title="Lihat di website"><svg class="icn" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></a>
+                            <button class="btn btn-danger btn-sm" onclick="deleteProject(${p.ID})" title="Hapus">Hapus</button>
                         </div>
                     </td>
                 </tr>
@@ -991,7 +1187,7 @@
     async function deleteProject(id) {
         if (!confirm('Hapus project ini beserta semua gambarnya?')) return;
         const res = await fetch(`/admin/api/projects/${id}`, { method: 'DELETE' });
-        if (res.ok) { toast('Project dihapus'); fetchProjects(); }
+        if (res.ok) { toast('Project dihapus'); fetchProjects(); refreshStats(); }
         else toast('Gagal menghapus', 'error');
     }
 
@@ -1062,7 +1258,7 @@
                 method: id ? 'PUT' : 'POST',
                 body: new FormData(pform)
             });
-            if (res.ok) { closeProjectModal(); fetchProjects(); toast('Project tersimpan ✓'); }
+            if (res.ok) { closeProjectModal(); fetchProjects(); toast('Project tersimpan'); refreshStats(); }
             else { const d = await res.json(); toast(d.error || 'Gagal menyimpan', 'error'); }
         } finally { btn.textContent = 'Simpan Project'; btn.disabled = false; }
     });
@@ -1100,14 +1296,14 @@
                 body: JSON.stringify(data)
             });
             if (res.ok) {
-                toast('Settings tersimpan ✓');
+                toast('Settings tersimpan');
                 if (data.Theme) {
                     updateThemeUI(data.Theme);
                     localStorage.setItem('theme', data.Theme);
                 }
             } else toast('Gagal menyimpan settings', 'error');
         } catch { toast('Gagal menyimpan settings', 'error'); }
-        finally { btn.textContent = '💾 Simpan Settings'; btn.disabled = false; }
+        finally { btn.textContent = 'Simpan Settings'; btn.disabled = false; }
     });
 
     // ============================================================
@@ -1131,8 +1327,8 @@
                     <td>${m.Order}</td>
                     <td>
                         <div class="td-actions">
-                            <button class="btn btn-outline btn-sm" onclick="openMenuModal(${m.ID}, ${JSON.stringify(m).replace(/'/g, '&#39;')})">✏️ Edit</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteMenu(${m.ID})">🗑</button>
+                            <button class="btn btn-outline btn-sm" onclick="openMenuModal(${m.ID}, ${JSON.stringify(m).replace(/'/g, '&#39;')})">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteMenu(${m.ID})">Hapus</button>
                         </div>
                     </td>
                 </tr>
@@ -1178,7 +1374,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
-            if (res.ok) { closeMenuModal(); fetchMenus(); toast('Menu tersimpan ✓'); }
+            if (res.ok) { closeMenuModal(); fetchMenus(); toast('Menu tersimpan'); }
             else toast('Gagal menyimpan menu', 'error');
         } finally { btn.textContent = 'Simpan'; btn.disabled = false; }
     });
@@ -1249,13 +1445,13 @@
             tbody.innerHTML = data.map(item => {
                 const cells = cols.map(f => `<td style="font-size:0.875rem;">${escapeHtml(item[f.name])}</td>`).join('');
                 const previewBtn = key === 'posts' && item.Slug
-                    ? `<a class="btn btn-outline btn-sm" href="/blog/${escapeHtml(item.Slug)}" target="_blank" title="Lihat">🔗</a>`
+                    ? `<a class="btn btn-outline btn-sm" href="/blog/${escapeHtml(item.Slug)}" target="_blank" title="Lihat di website"><svg class="icn" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></a>`
                     : '';
                 return `<tr>${cells}<td>
                     <div class="td-actions">
-                        <button class="btn btn-outline btn-sm" onclick="openCollectionModal('${key}', ${item.ID})">✏️ Edit</button>
+                        <button class="btn btn-outline btn-sm" onclick="openCollectionModal('${key}', ${item.ID})">Edit</button>
                         ${previewBtn}
-                        <button class="btn btn-danger btn-sm" onclick="deleteCollectionItem('${key}', ${item.ID})">🗑</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteCollectionItem('${key}', ${item.ID})">Hapus</button>
                     </div>
                 </td></tr>`;
             }).join('');
@@ -1324,7 +1520,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
-            if (res.ok) { closeCollectionModal(); fetchCollection(key); toast('Data tersimpan ✓'); }
+            if (res.ok) { closeCollectionModal(); fetchCollection(key); toast('Data tersimpan'); refreshStats(); }
             else { const d = await res.json(); toast(d.error || 'Gagal menyimpan', 'error'); }
         } catch { toast('Gagal menyimpan', 'error'); }
         finally { btn.textContent = 'Simpan'; btn.disabled = false; }
@@ -1333,7 +1529,7 @@
     async function deleteCollectionItem(key, id) {
         if (!confirm('Hapus data ini?')) return;
         const res = await fetch(`${collections[key].endpoint}/${id}`, { method: 'DELETE' });
-        if (res.ok) { fetchCollection(key); toast('Data dihapus'); }
+        if (res.ok) { fetchCollection(key); toast('Data dihapus'); refreshStats(); }
         else toast('Gagal menghapus', 'error');
     }
 
@@ -1342,7 +1538,7 @@
     // ============================================================
     async function fetchMessages() {
         const holder = document.getElementById('messageList');
-        holder.innerHTML = '<p style="color:var(--text-muted);">Loading...</p>';
+        holder.innerHTML = '<span class="skeleton" style="width:70%;"></span><span class="skeleton" style="width:50%;"></span>';
         try {
             const res = await fetch('/admin/api/messages');
             if (res.status === 401) { location.href = '/login'; return; }
@@ -1367,9 +1563,9 @@
                         </div>
                         <p class="msg-body">${escapeHtml(m.Message)}</p>
                         <div class="msg-actions">
-                            ${!m.IsRead ? `<button class="btn btn-outline btn-sm" onclick="markMessageRead(${m.ID})">✓ Tandai Dibaca</button>` : ''}
-                            <a class="btn btn-outline btn-sm" href="mailto:${escapeHtml(m.Email)}">📧 Balas</a>
-                            <button class="btn btn-danger btn-sm" onclick="deleteMessage(${m.ID})">🗑 Hapus</button>
+                            ${!m.IsRead ? `<button class="btn btn-outline btn-sm" onclick="markMessageRead(${m.ID})">Tandai Dibaca</button>` : ''}
+                            <a class="btn btn-outline btn-sm" href="mailto:${escapeHtml(m.Email)}">Balas</a>
+                            <button class="btn btn-danger btn-sm" onclick="deleteMessage(${m.ID})">Hapus</button>
                         </div>
                     </div>`).join('');
         } catch (err) { console.error(err); holder.innerHTML = '<p style="color:var(--danger);">Gagal memuat pesan.</p>'; }
@@ -1382,12 +1578,13 @@
             body: JSON.stringify({ IsRead: true })
         });
         fetchMessages();
+        refreshStats();
     }
 
     async function deleteMessage(id) {
         if (!confirm('Hapus pesan ini?')) return;
         const res = await fetch(`/admin/api/messages/${id}`, { method: 'DELETE' });
-        if (res.ok) { fetchMessages(); toast('Pesan dihapus'); }
+        if (res.ok) { fetchMessages(); toast('Pesan dihapus'); refreshStats(); }
         else toast('Gagal menghapus', 'error');
     }
 

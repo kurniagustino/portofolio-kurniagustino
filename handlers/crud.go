@@ -3,6 +3,8 @@ package handlers
 import (
 	"portfolio_kurnia/database"
 
+	"portfolio_kurnia/models"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -65,4 +67,19 @@ func Delete[T any]() fiber.Handler {
 		}
 		return c.JSON(fiber.Map{"message": "Berhasil dihapus"})
 	}
+}
+
+// AdminStatsAPI mengembalikan jumlah objek untuk stat card & badge di dashboard.
+func AdminStatsAPI(c *fiber.Ctx) error {
+	var projectCount, postCount, messageCount, unreadCount int64
+	database.DB.Model(&models.Project{}).Count(&projectCount)
+	database.DB.Model(&models.BlogPost{}).Count(&postCount)
+	database.DB.Model(&models.ContactMessage{}).Count(&messageCount)
+	database.DB.Model(&models.ContactMessage{}).Where("is_read = 0").Count(&unreadCount)
+	return c.JSON(fiber.Map{
+		"projects": projectCount,
+		"posts":    postCount,
+		"messages": messageCount,
+		"unread":   unreadCount,
+	})
 }

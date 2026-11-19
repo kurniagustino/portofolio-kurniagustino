@@ -15,3 +15,8 @@ dump.sql
 
 # Alat bantu sementara
 /tools/
+
+# Artefak tooling agen lokal (skills/rules/state) — jangan ikut di-commit
+.acs/
+.agents/
+.claude/

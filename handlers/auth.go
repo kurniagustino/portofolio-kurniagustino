@@ -37,9 +37,22 @@ func LoginUI(c *fiber.Ctx) error {
 func AdminUI(c *fiber.Ctx) error {
 	s := GetSettings()
 	csrfToken, _ := c.Locals("csrf").(string)
+
+	var projectCount, postCount, messageCount, unreadCount int64
+	database.DB.Model(&models.Project{}).Count(&projectCount)
+	database.DB.Model(&models.BlogPost{}).Count(&postCount)
+	database.DB.Model(&models.ContactMessage{}).Count(&messageCount)
+	database.DB.Model(&models.ContactMessage{}).Where("is_read = 0").Count(&unreadCount)
+
 	return c.Render("admin", fiber.Map{
-		"Settings":  s,
+		"Settings": s,
 		"CSRFToken": csrfToken,
+		"Stats": fiber.Map{
+			"Projects": projectCount,
+			"Posts":    postCount,
+			"Messages": messageCount,
+			"Unread":   unreadCount,
+		},
 	})
 }
 

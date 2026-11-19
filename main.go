@@ -100,6 +100,7 @@ func main() {
 		ContextKey:     "csrf",
 	}))
 	admin.Get("/", handlers.AdminUI)
+	admin.Get("/api/stats", handlers.AdminStatsAPI)
 	admin.Get("/api/projects", handlers.AdminListProjects)
 	admin.Post("/api/projects", handlers.AdminCreateProject)
 	admin.Put("/api/projects/:id", handlers.AdminUpdateProject)
